@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Queen extends Piece {
 
-    public Queen(String color, int[][] startPosition) {
+    public Queen(String color, int[] startPosition) {
         super(color, startPosition);
         this.value = 9;
     }
@@ -11,9 +11,13 @@ public class Queen extends Piece {
 
     }
 
-    public ArrayList<Integer> findValidMoves(int[][] position) {
+    public ArrayList<Integer> findValidMoves(int[] position) {
         ArrayList<Integer> validMoves = new ArrayList<>();
         return validMoves;
+    }
+
+    public String toString() {
+        return "Q";
     }
 
 }

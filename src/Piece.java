@@ -1,22 +1,22 @@
 import java.util.ArrayList;
 public abstract class Piece {
     protected String color;
-    protected int[][] position;
+    protected int[] position;
     protected int[] movement;
     protected ArrayList<Integer> validMoves;
     protected int value;
 
-    public Piece(String color, int[][] startPosition) {
+    public Piece(String color, int[] startPosition) {
         this.color = color;
         this.position = startPosition;
         this.validMoves = new ArrayList<>();
     }
 
-    public int[][] getPosition() {
+    public int[] getPosition() {
         return this.position;
     }
 
-    public void setPosition(int[][]newPosition) {
+    public void setPosition(int[]newPosition) {
         this.position = newPosition;
     }
 
@@ -34,8 +34,9 @@ public abstract class Piece {
 
     public abstract void move(); //calls setPosition
     
-    public abstract ArrayList<Integer> findValidMoves(int[][] position); //uses curr position, return is used to setValidMoves;
+    public abstract ArrayList<Integer> findValidMoves(int[] position); //uses curr position, return is used to setValidMoves;
 
+    public abstract String toString();
 
 
 }
