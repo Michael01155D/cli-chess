@@ -26,12 +26,16 @@ public class GameBoard {
         pieces.add(new Bishop(color, new int[] {row, col++}));
         pieces.add(new Knight(color, new int[] {row, col++}));
         pieces.add(new Rook(color, new int[] {row, col}));
-        row = color.equals("white") ? row-- : row++;
-        for (; col >= 0; col--) {
+        row = color.equals("white") ? row - 1 : row + 1;
+        for (col = 0; col < 8; col++) {
             pieces.add(new Pawn(color, new int[] {row, col}));
         }
         return pieces;
 
+    }
+
+    public Piece[][] getBoard() {
+        return this.board;
     }
 
     public void setUpBoard() {
@@ -59,4 +63,15 @@ public class GameBoard {
         System.out.println("   a   b   c   d   e   f   g   h");
     }
 
+    //to (probably) be refactored into Player class:
+
+    public Piece getPiece(int row, int col) {
+        return getBoard()[row][col];
+    }
+    //temporary?
+    public void seeValidMoves(Piece piece) {
+        piece.findValidMoves(getBoard());
+        ArrayList<Integer[]> validMoves = piece.getValidMoves();
+        System.out.println("valid moves of " + piece + " are: " + validMoves);
+    }
 }

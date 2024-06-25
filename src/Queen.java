@@ -11,9 +11,9 @@ public class Queen extends Piece {
 
     }
 
-    public ArrayList<Integer> findValidMoves(int[] position) {
-        ArrayList<Integer> validMoves = new ArrayList<>();
-        return validMoves;
+    public void findValidMoves(Piece[][] boardState) {
+        ArrayList<Integer[]> moves = new ArrayList<>();
+        setValidMoves(moves);
     }
 
     public String toString() {
