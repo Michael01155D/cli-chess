@@ -19,14 +19,15 @@ public class Pawn extends Piece {
         boolean onFarRight = col == 7;
         //if white, move upwards, ie descending row index
         int nextRow = this.getColor().equals("white") ? row - 1 : row + 1;
+        System.out.println("*** FINDING VALID MOVES FOR " + this.getColor() + " Pawn at position: " + "(" + row + ", " +col +")");
         if (boardState[nextRow][col] == null) {
-            moves.add(new Integer[] {row -1, col});
+            moves.add(new Integer[] {nextRow, col});
         }
         if ( !onFarRight && boardState[nextRow][col + 1] != null) {
-            moves.add(new Integer[] {row - 1, col + 1});
+            moves.add(new Integer[] {nextRow, col + 1});
         }
         if ( !onFarLeft && boardState[nextRow][col - 1] != null) {
-            moves.add(new Integer[] {row -1, col -1});
+            moves.add(new Integer[] {nextRow, col -1});
         }
         setValidMoves(moves);
     }

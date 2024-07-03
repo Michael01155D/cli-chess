@@ -68,10 +68,18 @@ public class GameBoard {
     public Piece getPiece(int row, int col) {
         return getBoard()[row][col];
     }
+    
     //temporary?
     public void seeValidMoves(Piece piece) {
         piece.findValidMoves(getBoard());
         ArrayList<Integer[]> validMoves = piece.getValidMoves();
-        System.out.println("valid moves of " + piece + " are: " + validMoves);
+        System.out.println("valid moves of " +piece.getColor() + " " + piece + " are: ");
+        for (Integer[] move : validMoves){
+            System.out.print("("+ move[0] + ", " + move[1] +")");
+        }
+     }
+
+    public boolean isEmpty(int row, int col) {
+        return getBoard()[row][col] == null;
     }
 }
