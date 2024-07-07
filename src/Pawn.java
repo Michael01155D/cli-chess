@@ -25,6 +25,7 @@ public class Pawn extends Piece {
         if (boardState[nextRow][col] == null) {
             moves.add(new Integer[] {nextRow, col});
         }
+        //fix diagonals so that move only possible if piece is opposite color
         if ( !onFarRight && boardState[nextRow][col + 1] != null) {
             moves.add(new Integer[] {nextRow, col + 1});
         }
