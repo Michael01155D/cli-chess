@@ -7,7 +7,7 @@ public class Queen extends Piece {
         this.value = 9;
     }
 
-    public void move(){
+    public void move(int row, int col){
 
     }
 
@@ -17,7 +17,7 @@ public class Queen extends Piece {
     }
 
     public String toString() {
-        return "Q";
+        return "Queen";
     }
 
 }

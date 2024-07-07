@@ -6,7 +6,7 @@ public class Bishop extends Piece {
         super(color, startPosition);
         this.value = 3;
     }
-    public void move(){
+    public void move(int row, int col) {
         
     }
 
@@ -16,7 +16,7 @@ public class Bishop extends Piece {
     }
 
     public String toString() {
-        return "B";
+        return "Bishop";
     }
 
 }

@@ -27,7 +27,7 @@ public abstract class Piece {
     public String getColor() {
         return this.color;
     }
-
+    //valid moves in format: [rowIndex, colIndex];
     public ArrayList<Integer[]> getValidMoves() {
         return this.validMoves;
     }
@@ -36,7 +36,8 @@ public abstract class Piece {
         this.validMoves = newValidMoves;
     }
 
-    public abstract void move(); //calls setPosition
+    //convert input into array row/col and check validity in gameboard before calling this method
+    public abstract void move(int row, int col); //calls setPosition
     
     public abstract void findValidMoves(Piece[][] boardState); //calls setValidMoves;
 

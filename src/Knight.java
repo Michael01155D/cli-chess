@@ -6,7 +6,7 @@ public class Knight extends Piece {
         super(color, startPosition);
         this.value = 3;
     }
-    public void move(){
+    public void move(int row, int col){
         
     }
 
@@ -16,7 +16,7 @@ public class Knight extends Piece {
     }
 
     public String toString() {
-        return "k";
+        return "knight";
     }
 
 }

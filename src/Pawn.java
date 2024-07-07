@@ -7,7 +7,9 @@ public class Pawn extends Piece {
         this.value = 1;
     }
 
-    public void move(){
+    public void move(int row, int col){
+        setPosition(new int[] {row, col});
+        return;
     }
 
     public void findValidMoves(Piece[][] boardState) {
@@ -19,7 +21,7 @@ public class Pawn extends Piece {
         boolean onFarRight = col == 7;
         //if white, move upwards, ie descending row index
         int nextRow = this.getColor().equals("white") ? row - 1 : row + 1;
-        System.out.println("*** FINDING VALID MOVES FOR " + this.getColor() + " Pawn at position: " + "(" + row + ", " +col +")");
+        //System.out.println("*** FINDING VALID MOVES FOR " + this.getColor() + " Pawn at position: " + "(" + row + ", " +col +")");
         if (boardState[nextRow][col] == null) {
             moves.add(new Integer[] {nextRow, col});
         }
@@ -33,7 +35,7 @@ public class Pawn extends Piece {
     }
 
     public String toString() {
-        return "P";
+        return "Pawn";
     }
 
 }
