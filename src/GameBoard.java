@@ -5,8 +5,8 @@ import java.util.Scanner;
 public class GameBoard {
 
     final int BOARDSIZE = 8;
-    //maps to quickly convert rows/cols as they're labeled on the board to corresponding indicies of 2d array. ex: "a6" would be Board[2, 0]
-    final Map<String, Integer> COL_INDICIES = Map.of( 
+    //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
+    final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
         "a", 0,
         "b", 1,
         "c", 2,
@@ -17,7 +17,18 @@ public class GameBoard {
         "h", 7
     );
 
-    final Map<Integer, Integer> ROW_INDICIES = Map.of(
+    final Map<Integer, String> INDEX_TO_BOARD_COL = Map.of(
+        0, "a",
+        1, "b",
+        2, "c",
+        3, "d",
+        4, "e",
+        5, "f",
+        6, "g",
+        7, "h"
+    );
+
+    final Map<Integer, Integer> BOARD_ROW_TO_INDEX = Map.of(
         8, 0,
         7, 1,
         6, 2,
@@ -26,6 +37,17 @@ public class GameBoard {
         3, 5,
         2, 6,
         1, 7
+    );
+
+    final Map <Integer, Integer> INDEX_TO_BOARD_ROW = Map.of(
+        0, 8,
+        1, 7,
+        2, 6,
+        3, 5,
+        4, 4,
+        5, 3,
+        6, 2,
+        7, 1
     );
 
     private Piece[][] board;
@@ -108,25 +130,14 @@ public class GameBoard {
         int[] prevPosition = piece.getPosition();
         int prevRow = prevPosition[0];
         int prevCol = prevPosition[1];
-        //loop through hashmap keysets to display current position of piece on the board:
-        String boardCol = "";
-        int boardRow = 0;
-        for (String colName: COL_INDICIES.keySet()) {
-            if (COL_INDICIES.get(colName) == prevCol) {
-                boardCol = colName;
-                break;
-            }
-        }
-        for (int rowNum: ROW_INDICIES.keySet()) {
-            if (ROW_INDICIES.get(rowNum) == prevRow) {
-                boardRow = rowNum;
-                break;
-            }
-        }
+        //use maps to convert indicies of piece to labels used on board
+        String boardCol = INDEX_TO_BOARD_COL.get(prevCol);
+        int boardRow = INDEX_TO_BOARD_ROW.get(prevRow);
+    
         System.out.println("Where will you move the " + piece + " positioned at " + boardCol + boardRow +"?");
         String col = "";
         String row = "-1"; //-1 to allow parseInt on first check
-        while (!COL_INDICIES.containsKey(col)) {
+        while (!BOARD_COL_TO_INDEX.containsKey(col)) {
             System.out.println("Please enter the column to move to (a to h) :");
             col = inputScanner.nextLine();
         }
@@ -135,8 +146,8 @@ public class GameBoard {
             row = inputScanner.nextLine();
         }
         for (Integer[] validMove: validMoves) {
-            int newRowIndex = ROW_INDICIES.get(Integer.parseInt(row));
-            int newColIndex = COL_INDICIES.get(col);
+            int newRowIndex = BOARD_ROW_TO_INDEX.get(Integer.parseInt(row));
+            int newColIndex = BOARD_COL_TO_INDEX.get(col);
             if (validMove[0] == newRowIndex && validMove[1] == newColIndex) {
                 System.out.println("Moving piece to " + col + row); 
                 piece.setPosition(new int[] {newRowIndex, newColIndex} );
@@ -152,17 +163,29 @@ public class GameBoard {
 
     }
 
-    //temporary?
+    //probably a temporary method for debugging
     public void seeValidMoves(Piece piece) {
         piece.findValidMoves(getBoard());
+        int[] currPosition = piece.getPosition();
+        String currPositionString = "(" + INDEX_TO_BOARD_COL.get(currPosition[1]) + INDEX_TO_BOARD_ROW.get(currPosition[0]) + ")";
         ArrayList<Integer[]> validMoves = piece.getValidMoves();
-        System.out.println("valid moves of " +piece.getColor() + " " + piece + " are: ");
+        System.out.println("valid moves of " +piece.getColor() + " " + piece + " at position " + currPositionString + " are:");
         for (Integer[] move : validMoves){
-            System.out.print("("+ move[0] + ", " + move[1] +")");
+            //convert array indicies (values) to board labels (keys)
+            String col = INDEX_TO_BOARD_COL.get(move[1]);
+            int row = INDEX_TO_BOARD_ROW.get(move[0]);
+            System.out.println("(" + col + row +")");
         }
      }
 
     public boolean isEmpty(int row, int col) {
         return getBoard()[row][col] == null;
+    }
+
+    //for debugging and testing moves
+    public void addTestPiece(Piece piece) {
+        int row = piece.getPosition()[0];
+        int col = piece.getPosition()[1];
+        this.board[row][col] = piece;
     }
 }

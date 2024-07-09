@@ -25,13 +25,22 @@ public class Pawn extends Piece {
         if (boardState[nextRow][col] == null) {
             moves.add(new Integer[] {nextRow, col});
         }
-        //fix diagonals so that move only possible if piece is opposite color
-        if ( !onFarRight && boardState[nextRow][col + 1] != null) {
+        //if piece exists in upper diagonal and is of opposite color
+        if ( !onFarRight && (boardState[nextRow][col + 1] != null && !(boardState[nextRow][col + 1].getColor().equals(this.color)))) {
             moves.add(new Integer[] {nextRow, col + 1});
         }
-        if ( !onFarLeft && boardState[nextRow][col - 1] != null) {
+        if ( !onFarLeft &&  (boardState[nextRow][col - 1] != null && !(boardState[nextRow][col - 1].getColor().equals(this.color)))) {
             moves.add(new Integer[] {nextRow, col -1});
         }
+        //booleans to check if pawn can move up two spaces
+        boolean hasNotMoved = (this.color.equals("white") && row == 6) || (this.color.equals("black") && row == 1);
+        boolean forwardEmpty = boardState[nextRow][col] == null;
+        int forwardTwoSpaces = this.color.equals("white") ? nextRow - 1 : nextRow + 1;
+        
+        if (hasNotMoved && boardState[forwardTwoSpaces][col] == null && forwardEmpty) {
+            moves.add(new Integer[] {forwardTwoSpaces, col});
+        }
+         
         setValidMoves(moves);
     }
 
