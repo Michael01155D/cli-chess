@@ -58,6 +58,7 @@ public class Knight extends Piece {
     private boolean isAvailable(int row, int col, Piece[][] board) {
         return board[row][col] == null || !(board[row][col].getColor().equals(this.getColor()));
     }
+    
     public String toString() {
         return "knight";
     }
