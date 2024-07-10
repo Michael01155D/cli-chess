@@ -6,10 +6,6 @@ public class King extends Piece {
         super(color, startPosition);
         this.value = 999;
     }
-
-    public void move(int row, int col){
-        
-    }   
     
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();

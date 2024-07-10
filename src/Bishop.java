@@ -6,9 +6,6 @@ public class Bishop extends Piece {
         super(color, startPosition);
         this.value = 3;
     }
-    public void move(int row, int col) {
-        
-    }
 
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();

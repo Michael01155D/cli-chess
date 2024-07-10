@@ -7,10 +7,6 @@ public class Rook extends Piece {
         this.value = 5;
     }
 
-    public void move(int row, int col){
-
-    }
-
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();
         setValidMoves(moves);

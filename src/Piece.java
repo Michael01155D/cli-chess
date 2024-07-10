@@ -37,7 +37,7 @@ public abstract class Piece {
     }
 
     //convert input into array row/col and check validity in gameboard before calling this method
-    public abstract void move(int row, int col); //calls setPosition
+
     
     public abstract void findValidMoves(Piece[][] boardState); //calls setValidMoves;
 

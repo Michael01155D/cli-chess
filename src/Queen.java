@@ -7,10 +7,6 @@ public class Queen extends Piece {
         this.value = 9;
     }
 
-    public void move(int row, int col){
-
-    }
-
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();
         setValidMoves(moves);

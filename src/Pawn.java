@@ -7,11 +7,6 @@ public class Pawn extends Piece {
         this.value = 1;
     }
 
-    public void move(int row, int col){
-        setPosition(new int[] {row, col});
-        return;
-    }
-
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();
         int row = getPosition()[0];
