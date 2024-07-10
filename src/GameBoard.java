@@ -149,18 +149,16 @@ public class GameBoard {
             int newRowIndex = BOARD_ROW_TO_INDEX.get(Integer.parseInt(row));
             int newColIndex = BOARD_COL_TO_INDEX.get(col);
             if (validMove[0] == newRowIndex && validMove[1] == newColIndex) {
-                System.out.println("Moving piece to " + col + row); 
+                System.out.println("Moving piece to " + col + row);
                 piece.setPosition(new int[] {newRowIndex, newColIndex} );
                 this.board[prevRow][prevCol] = null;
                 this.board[newRowIndex][newColIndex] = piece;
                 displayBoard();
                 return;
             }
-            //todo: refactor so that the user re-enters input until a valid move is given.
-            System.out.println("move wasnt valid :(");
         } 
-
-
+         //todo: refactor so that the user re-enters input until a valid move is given.
+        System.out.println("move wasnt valid :(");
     }
 
     //probably a temporary method for debugging
