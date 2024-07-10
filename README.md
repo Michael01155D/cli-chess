@@ -8,3 +8,12 @@ CLI version of chess in java. The goal of this project is to serve as a starting
 ////Currently Todo//
 
 - Implement Knight movement logic
+
+
+///Future Todos//
+
+- distinguish between black and white pieces visually
+
+- implement Player class
+
+- implement game flow (select piece -> move piece -> check if check -> check if check mate -> next move)
