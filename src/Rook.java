@@ -11,86 +11,61 @@ public class Rook extends Piece {
         ArrayList<Integer[]> moves = new ArrayList<>();
         int startRow = this.getPosition()[0];
         int startCol = this.getPosition()[1];
-        //add (currRow--, currCol) to moves until reach edge of board or a piece is in the way. if piece is enemy, add that space too
-        //^same logic for (currRow++, currCol). and (currRow, currCol--) and (currRow, currCol++)
-        int currRow = startRow;
-        int currCol = startCol; 
-        int totals = spacesAvailable(boardState);
-        System.out.println("Total rows rook can move is: " + totals);
-        //first add (currRow--, currCol) moves:
-        while (--currRow >= 0) {
-            Piece nextDown = boardState[currRow][currCol];
-            if (nextDown == null) {
-                moves.add(new Integer[] {currRow, currCol});
-                continue;
-            }
-            
-            if (!nextDown.getColor().equals(this.getColor())){
-                moves.add(new Integer[] {currRow, currCol});
-            }
-
-            break;
-        }
-        //logic is the same for all 4 move types, should be able to loop
-        setValidMoves(moves);
-    }
-
-    //first find down rows, then find up rows
-    private int spacesAvailable(Piece[][] boardState) {
-        int nextRow = getPosition()[0] -1;
-        int currCol = getPosition()[1];
-        int totalSpaces = 0;
-        
-        //first find num of moves can go up (ie lowering row index)
-        while ( nextRow >= 0 && boardState[nextRow][currCol] == null) {
-            totalSpaces++;
+        //add (currRow -1, currCol) to moves until reach edge of board or a piece is in the way. if piece is enemy, add that space too
+        //^same logic for (currRow +1, currCol). and (currRow, currCol-1) and (currRow, currCol+1)
+        int nextRow = startRow - 1;
+        //first find moves going up the row indices
+        while (nextRow >= 0 && boardState[nextRow][startCol] == null) {
+            moves.add(new Integer[] {nextRow, startCol});
             nextRow--;
         }
-        //if nextRow is valid and either nextRow is empty or its a piece of the opposite color
+        //if nextRow exists and either nextRow is empty or its a piece of the opposite color
         if (nextRow >= 0 && 
-        (boardState[nextRow][currCol] == null || !(boardState[nextRow][currCol].getColor().equals(this.getColor())))
+        (boardState[nextRow][startCol] == null || !(boardState[nextRow][startCol].getColor().equals(this.getColor())))
         ) {
-            totalSpaces++;
+            moves.add(new Integer[] {nextRow, startCol});
         }
-        nextRow = getPosition()[0] + 1;
+        //set next row to begin checking down the board
+        nextRow = startRow + 1;
         
-        while (nextRow < boardState.length -1 && boardState[nextRow][currCol] == null) {
-            totalSpaces++;
+        while (nextRow < boardState.length -1 && boardState[nextRow][startCol] == null) {
+            moves.add(new Integer[] {nextRow, startCol});
             nextRow++;
         }
     
         if (nextRow <= boardState.length -1 && 
-        (boardState[nextRow][currCol] == null || !(boardState[nextRow][currCol].getColor().equals(this.getColor())))
+        (boardState[nextRow][startCol] == null || !(boardState[nextRow][startCol].getColor().equals(this.getColor())))
         ) {
-            totalSpaces++;
+            moves.add(new Integer[] {nextRow, startCol});
         }
+        //now find columns to the left
+        int nextCol = startCol -1;
 
-        int currRow = this.getPosition()[0];
-        int nextCol = currCol -1;
-
-        while ( nextCol >= 0 && boardState[currRow][nextCol] == null) {
-            totalSpaces++;
+        while ( nextCol >= 0 && boardState[startRow][nextCol] == null) {
+            moves.add(new Integer[] {startRow, nextCol});
             nextCol--;
         }
 
         if (nextCol >= 0 && 
-        (boardState[currRow][nextCol] == null || !(boardState[currRow][nextCol].getColor().equals(this.getColor())))
+        (boardState[startRow][nextCol] == null || !(boardState[startRow][nextCol].getColor().equals(this.getColor())))
         ) {
-            totalSpaces++;
+            moves.add(new Integer[] {startRow, nextCol});
         }
-        nextCol = currCol + 1;
+        //now check columns to the right
+        nextCol = startCol + 1;
         
-        while (nextCol < boardState.length -1 && boardState[currRow][nextCol] == null) {
-            totalSpaces++;
+        while (nextCol < boardState.length -1 && boardState[startRow][nextCol] == null) {
+            moves.add(new Integer[] {startRow, nextCol});
             nextCol++;
         }
     
         if (nextCol <= boardState.length -1 && 
-            (boardState[currRow][nextCol] == null || !(boardState[currRow][nextCol].getColor().equals(this.getColor())))
+            (boardState[startRow][nextCol] == null || !(boardState[startRow][nextCol].getColor().equals(this.getColor())))
         ) {
-            totalSpaces++;
+            moves.add(new Integer[] {startRow, nextCol});
         }
-        return totalSpaces;
+       
+        setValidMoves(moves);
     }
 
     public String toString() {

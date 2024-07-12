@@ -3,9 +3,8 @@ public class App {
         GameBoard gameBoard = new GameBoard();
         //for testing: gameboard.addTestPiece(Piece) -> Piece foo = gameboard.getPiece(row, col) -> gameBoard.seeValidMoves(foo);
         Piece rook = gameBoard.getPiece(7, 0);
-        gameBoard.getBoard()[6][0] = null;
-        gameBoard.addTestPiece(new Rook("black", new int[] {2, 0}));
+        gameBoard.addTestPiece(new Rook("black", new int[] {4, 4}));
         gameBoard.displayBoard();
-        gameBoard.seeValidMoves(gameBoard.getPiece(0, 0));
+        gameBoard.seeValidMoves(gameBoard.getPiece(4, 4));
     }
 }
