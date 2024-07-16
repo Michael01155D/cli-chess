@@ -4,10 +4,12 @@ CLI version of chess in java. The goal of this project is to serve as a starting
 
 - Board initializes with proper pieces
 - Pawn movement logic is (mostly) complete (except transforming at board end and en passant)
+- Knight movement logic seems complete
+- Rook movement logic seems complete
 
 ////Currently Todo//
 
-- Implement Knight movement logic
+- Finish remaining pieces move logic
 
 
 ///Future Todos//
