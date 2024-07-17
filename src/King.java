@@ -2,6 +2,22 @@ import java.util.ArrayList;
 
 public class King extends Piece {
 
+    /*
+    current step: need to see if king is in check...
+    this affects the entire game, so put in board?
+    after a non-king piece moves, check to see if oppo color king is in its move list
+    if yes, that king is in check and must move, if no valid moves, checkmate
+
+    ^this relies on king needing to only be able to move in safe spaces
+
+    Key: King needs to know which spaces are dangerous.
+    ie: what possible moves are there for every other oppo color piece
+
+    idea: give Gameboard an ArrayList of all pieces valid moves
+          that updates on each move. 
+          
+    */
+
     private boolean isInCheck;
     
     public King(String color, int[] startPosition) {
