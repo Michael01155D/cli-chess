@@ -26,7 +26,7 @@ public class Bishop extends Piece {
         int nextRow = incrementNextRow ? currRow + 1 : currRow - 1;
         int nextCol = incrementNextCol ? currCol + 1 : currCol - 1;
         
-        boolean notAtEdge = checkNextPosition(dir, nextRow, nextCol);
+        boolean notAtEdge = nextRow < 8 && nextRow > -1 && nextCol < 8 && nextCol > -1;
         
         while (notAtEdge) {
             //if the next board position in current direction isnt empty, stop iterating. add position if piece is opposite color.
@@ -40,31 +40,8 @@ public class Bishop extends Piece {
             moves.add(new Integer[] {nextRow, nextCol});
             nextRow = incrementNextRow ? nextRow + 1 : nextRow - 1;
             nextCol = incrementNextCol ? nextCol + 1 : nextCol - 1;
-            notAtEdge = checkNextPosition(dir, nextRow, nextCol);  
+            notAtEdge = nextRow < 8 && nextRow > -1 && nextCol < 8 && nextCol > -1;
         }
-    }
-
-    //helper function called by addMoves to update the while loop's condition value after each movement
-    private boolean checkNextPosition(String dir, int nextRow, int nextCol) {
-        boolean notAtEdge;
-        switch (dir) {
-            case "upLeft":
-                notAtEdge = nextRow > -1 && nextCol > -1;
-                break;
-            case "upRight":
-                notAtEdge = nextRow > -1 && nextCol < 8;
-                break;
-            case "downLeft":
-                notAtEdge = nextRow < 8 && nextCol > -1;
-                break;
-            case "downRight":
-                notAtEdge = nextRow < 8 && nextCol < 8;
-                break;
-            default:
-                notAtEdge = false;
-                break;
-        }
-        return notAtEdge;
     }
 
     public String toString() {
