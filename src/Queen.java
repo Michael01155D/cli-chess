@@ -32,9 +32,6 @@ public class Queen extends Piece {
         
         while (inBound) {
             //if the next board position in current direction isnt empty, stop iterating. add position if piece is opposite color.
-            if (dir.equals("right")){
-                System.out.println("when dir is right, nextRow is: " + nextRow + " and nextCol is: " + nextCol);
-            }
             if (boardState[nextRow][nextCol] != null) {
                 if (!boardState[nextRow][nextCol].getColor().equals(this.getColor())) {
                     moves.add(new Integer[] {nextRow, nextCol});
