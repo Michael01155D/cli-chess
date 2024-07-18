@@ -39,6 +39,28 @@ public class Pawn extends Piece {
         setValidMoves(moves);
     }
 
+    public ArrayList<Integer[]> getDiagonals() {
+        ArrayList<Integer[]> diagonals = new ArrayList<>();
+        int[] position = this.getPosition();
+        //if white, it can attack up (decrement row) 
+        if (this.getColor().equals("white")) {
+            if (position[0] > 0 && position[1] < 7) {
+                diagonals.add(new Integer[] {position[0] - 1, position[1] + 1});
+            }
+            if (position[0] > 0 && position[1] > 0) {
+                diagonals.add(new Integer[] {position[0] - 1, position[1] - 1});
+            }
+        } else {
+            //if black, it can attack down (increment row)
+            if (position[0] < 7 && position[1] < 7) {
+                diagonals.add(new Integer[] {position[0] + 1, position[1] + 1});
+            }
+            if (position[0] < 7 && position[1] > 0) {
+                diagonals.add(new Integer[] {position[0] + 1, position[1] - 1});
+            }
+        }
+        return diagonals;
+    }
     public String toString() {
         return "Pawn";
     }

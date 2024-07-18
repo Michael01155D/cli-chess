@@ -15,7 +15,16 @@ public class King extends Piece {
 
     idea: give Gameboard an ArrayList of all pieces valid moves
           that updates on each move. 
-          
+        board has an unsafe for black and unsafe for white array
+        for each piece in both color arrays, add their possible moves to 
+        opposite color's unsafe array
+        after a piece moves, remove its possible moves from that array and re-add
+        ^problem: how to know which moves in the array are associated with each piece?
+        ^solution? hashmap, <Piece, moves arrList> 
+        in each Piece's findValid moves, also add them to the map
+        problem2: a piece moving can impact a diff. piece's attack area
+        ^ex: pawn moves, suddenly bishop can access more spaces. 
+        //solution2? just loop thru each piece after each move. 
     */
 
     private boolean isInCheck;

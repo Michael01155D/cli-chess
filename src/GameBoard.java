@@ -1,6 +1,8 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.HashMap;
 
 public class GameBoard {
 
@@ -51,15 +53,23 @@ public class GameBoard {
     );
 
     private Piece[][] board;
-    ArrayList<Piece> activeWhitePieces;
-    ArrayList<Piece> activeBlackPieces;
-    Scanner inputScanner;    
+    private ArrayList<Piece> activeWhitePieces;
+    private ArrayList<Piece> activeBlackPieces;
+    //maps for each board space that is unsafe for opposite color king;
+    private HashMap<Piece, ArrayList<Integer[]>> underAttackByWhite;
+    private HashMap<Piece, ArrayList<Integer[]>> underAttackByBlack; 
+
+    private Scanner inputScanner;    
+    
     public GameBoard(){
         this.inputScanner = new Scanner(System.in);
         this.board = new Piece[BOARDSIZE][BOARDSIZE];
         this.activeWhitePieces = createPieces("white");
         this.activeBlackPieces = createPieces("black");
         setUpBoard();
+        // populate underAttack hashmaps with each Piece as a key w. values being the spaces that opposite color king can't move into.
+        this.underAttackByWhite = setUnsafeSpaces("white");
+        this.underAttackByBlack = setUnsafeSpaces("black");
     }
 
     //return array of pieces in following order: rook, knight, bishop, queen, king, bishop, knight, rook, pawns
@@ -87,6 +97,26 @@ public class GameBoard {
         return this.board;
     }
 
+    public ArrayList<Piece> getActivePieces(String color) {
+        return color.equals("white") ? this.activeWhitePieces : this.activeBlackPieces;
+    }
+
+    public HashMap<Piece, ArrayList<Integer[]>> getSpacesUnderAttack (String color) {
+        return color.equals("white") ? this.underAttackByWhite : this.underAttackByBlack;
+    }
+
+    //for testing:
+    public void printUnsafeSpaces(String color) {
+        HashMap<Piece, ArrayList<Integer[]>> spaces = this.getSpacesUnderAttack(color);
+        for (Piece piece: spaces.keySet()) {
+            String moveList = "";
+            for (Integer[] canAttack : spaces.get(piece)) {
+                moveList += " (" + INDEX_TO_BOARD_COL.get(canAttack[1]) + INDEX_TO_BOARD_ROW.get(canAttack[0]) +") ";
+            }
+            System.out.println(piece.getColor() + " " + piece + " can attack: " + moveList);
+        }
+    }
+
     public void setUpBoard() {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 8; j++) {
@@ -95,6 +125,22 @@ public class GameBoard {
             }
         }
     };
+
+    //update underAttack hashmaps to contain each Piece as a key mapped to its possible attacking spaces, to use in determining check/mate or king movement:
+    public HashMap<Piece, ArrayList<Integer[]>> setUnsafeSpaces(String color){
+        Piece[][] board = getBoard();
+        HashMap<Piece, ArrayList<Integer[]>> spacesUnderAttack = new HashMap<>();
+        for (Piece piece : getActivePieces(color)) {
+            if (piece instanceof Pawn) {
+                Pawn currPiece = (Pawn) piece;
+                spacesUnderAttack.put(piece, currPiece.getDiagonals());
+            } else {
+                piece.findValidMoves(board);
+                spacesUnderAttack.put(piece, piece.getValidMoves());
+            }
+        }
+        return spacesUnderAttack;
+    }
 
     public void displayBoard() {
         String lineBreak = "   --------------------------------";
