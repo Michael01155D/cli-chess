@@ -1,8 +1,6 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.HashMap;
 
 public class GameBoard {
 
@@ -56,8 +54,8 @@ public class GameBoard {
     private ArrayList<Piece> activeWhitePieces;
     private ArrayList<Piece> activeBlackPieces;
     //maps for each board space that is unsafe for opposite color king;
-    private HashMap<Piece, ArrayList<Integer[]>> underAttackByWhite;
-    private HashMap<Piece, ArrayList<Integer[]>> underAttackByBlack; 
+    private ArrayList<Integer[]> underAttackByWhite;
+    private ArrayList<Integer[]> underAttackByBlack; 
 
     private Scanner inputScanner;    
     
@@ -67,9 +65,16 @@ public class GameBoard {
         this.activeWhitePieces = createPieces("white");
         this.activeBlackPieces = createPieces("black");
         setUpBoard();
-        // populate underAttack hashmaps with each Piece as a key w. values being the spaces that opposite color king can't move into.
-        this.underAttackByWhite = setUnsafeSpaces("white");
-        this.underAttackByBlack = setUnsafeSpaces("black");
+        this.underAttackByBlack = new ArrayList<>();
+        this.underAttackByWhite = new ArrayList<>();
+        // populate underAttack lists with the spaces that opposite color king can't move into.
+        setSpacesUnderAttack("white");
+        setSpacesUnderAttack("black");
+        //initialize each King's unsafe spaces:
+        King wKing = ((King)getBoard()[7][4]);
+        King bKing = ((King)getBoard()[0][4]);
+        wKing.setUnsafeSpaces(getSpacesUnderAttack("black"));
+        bKing.setUnsafeSpaces(getSpacesUnderAttack("white"));
     }
 
     //return array of pieces in following order: rook, knight, bishop, queen, king, bishop, knight, rook, pawns
@@ -101,19 +106,18 @@ public class GameBoard {
         return color.equals("white") ? this.activeWhitePieces : this.activeBlackPieces;
     }
 
-    public HashMap<Piece, ArrayList<Integer[]>> getSpacesUnderAttack (String color) {
+    //use color white to determine black king's unsafe spaces, and vice versa. 
+    public ArrayList<Integer[]> getSpacesUnderAttack (String color) {
         return color.equals("white") ? this.underAttackByWhite : this.underAttackByBlack;
     }
 
     //for testing:
     public void printUnsafeSpaces(String color) {
-        HashMap<Piece, ArrayList<Integer[]>> spaces = this.getSpacesUnderAttack(color);
-        for (Piece piece: spaces.keySet()) {
-            String moveList = "";
-            for (Integer[] canAttack : spaces.get(piece)) {
-                moveList += " (" + INDEX_TO_BOARD_COL.get(canAttack[1]) + INDEX_TO_BOARD_ROW.get(canAttack[0]) +") ";
-            }
-            System.out.println(piece.getColor() + " " + piece + " can attack: " + moveList);
+        ArrayList<Integer[]> spaces = this.getSpacesUnderAttack(color);
+        String oppoColor = color.equals("white") ? "black" : "white";
+        System.out.println(oppoColor + " King cannot move to: ");
+        for (Integer[] space: spaces) {
+            System.out.println("(" + INDEX_TO_BOARD_COL.get(space[1]) + INDEX_TO_BOARD_ROW.get(space[0]) +")");
         }
     }
 
@@ -126,20 +130,25 @@ public class GameBoard {
         }
     };
 
-    //update underAttack hashmaps to contain each Piece as a key mapped to its possible attacking spaces, to use in determining check/mate or king movement:
-    public HashMap<Piece, ArrayList<Integer[]>> setUnsafeSpaces(String color){
+    //update underAttack lists to contain each Piece possible attacking spaces, to use in determining check/mate or king movement:
+    public void setSpacesUnderAttack(String color){
         Piece[][] board = getBoard();
-        HashMap<Piece, ArrayList<Integer[]>> spacesUnderAttack = new HashMap<>();
+        ArrayList<Integer[]> spacesUnderAttack = getSpacesUnderAttack(color);
+        //reset the list before repopulating it
+        spacesUnderAttack.clear();
         for (Piece piece : getActivePieces(color)) {
             if (piece instanceof Pawn) {
                 Pawn currPiece = (Pawn) piece;
-                spacesUnderAttack.put(piece, currPiece.getDiagonals());
+                for (Integer[] diagonal: currPiece.getDiagonals()) {
+                    spacesUnderAttack.add(diagonal);
+                }
             } else {
                 piece.findValidMoves(board);
-                spacesUnderAttack.put(piece, piece.getValidMoves());
+                for (Integer[] move: piece.getValidMoves()) {
+                    spacesUnderAttack.add(move);
+                }
             }
         }
-        return spacesUnderAttack;
     }
 
     public void displayBoard() {
@@ -191,6 +200,7 @@ public class GameBoard {
             System.out.println("Please enter the row to move to (1 to 8)");
             row = inputScanner.nextLine();
         }
+        //check all possible valid moves to see if userinput is valid
         for (Integer[] validMove: validMoves) {
             int newRowIndex = BOARD_ROW_TO_INDEX.get(Integer.parseInt(row));
             int newColIndex = BOARD_COL_TO_INDEX.get(col);
@@ -200,6 +210,22 @@ public class GameBoard {
                 this.board[prevRow][prevCol] = null;
                 this.board[newRowIndex][newColIndex] = piece;
                 displayBoard();
+                //update lists of spaces that kings can't access:
+                setSpacesUnderAttack("white");
+                setSpacesUnderAttack("black");
+                //update each King's list of unsafe spaces:
+                for (Piece whitePiece : getActivePieces("white")) {
+                    if (whitePiece instanceof King) {
+                        ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
+                    }
+                }
+
+                for (Piece blackPiece : getActivePieces("black")) {
+                    if (blackPiece instanceof King) {
+                        ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+                    }
+                }
+
                 return;
             }
         } 
@@ -231,5 +257,25 @@ public class GameBoard {
         int row = piece.getPosition()[0];
         int col = piece.getPosition()[1];
         this.board[row][col] = piece;
+        if (piece.getColor().equals("white")){
+            activeWhitePieces.add(piece);
+        } else {
+            activeBlackPieces.add(piece);
+        }
+        setSpacesUnderAttack("white");
+        setSpacesUnderAttack("black");
+        for (Piece whitePiece : getActivePieces("white")) {
+            if (whitePiece instanceof King) {
+                ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
+            }
+        }
+
+        for (Piece blackPiece : getActivePieces("black")) {
+            if (blackPiece instanceof King) {
+                ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+            }
+        }
+
+
     }
 }
