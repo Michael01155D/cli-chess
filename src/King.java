@@ -78,7 +78,7 @@ public class King extends Piece {
             (boardState[nextRow][nextCol] != null && !boardState[nextRow][nextCol].getColor().equals(this.getColor()))
             ) {
                 
-                //use a boolean flag when going thru array of unsafe spaces, add if flag is false at end. 
+                //use a boolean flag when going thru array of unsafe spaces, add move if flag is false at end. 
                 boolean isSafeMove = true;
             for (Integer[] unsafeSpace : getUnsafeSpaces()) {
                 //if the possible move is in list of unsafe spaces, dont add it
@@ -93,6 +93,7 @@ public class King extends Piece {
         } 
     }
 
+    //for debugging.
     public void printUnsafeSpaces() {
         for (Integer[] space: this.unSafeSpaces) {
             System.out.println("cant move to: " + space[0] + ", " + space[1]);
