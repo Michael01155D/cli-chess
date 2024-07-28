@@ -2,6 +2,14 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
+ /*
+    current step: need to see if king is in check...
+    using unsafeSpaces arr list, see iterate through them and see if king is present
+    if yes, set king's isInCheck.
+
+    Then at start of move method, check if that color king isInCheck, if yes, king must be chosen, if king has no valid moves, checkmate.
+*/
+
 public class GameBoard {
 
     final int BOARDSIZE = 8;

@@ -2,31 +2,6 @@ import java.util.ArrayList;
 
 public class King extends Piece {
 
-    /*
-    current step: need to see if king is in check...
-    this affects the entire game, so put in board?
-
-    ^this relies on king needing to only be able to move in safe spaces
-
-    Key: King needs to know which spaces are dangerous.
-    ie: what possible moves are there for every other oppo color piece
-
-    idea: give Gameboard an ArrayList of all pieces valid moves
-          that updates on each move. 
-        board has an unsafe for black and unsafe for white array
-        for each piece in both color arrays, add their possible moves to 
-        opposite color's unsafe array (for pawn just diagonals)
-        after a piece moves, remove its possible moves from that array and re-add
-        ^problem: how to know which moves in the array are associated with each piece?
-        ^solution? hashmap, <Piece, moves arrList> 
-        in each Piece's findValid moves, also add them to the map
-        problem2: a piece moving can impact a diff. piece's attack area
-        ^ex: pawn moves, suddenly bishop can access more spaces. 
-        //solution2? just loop thru each piece after each move. redo the maps after every change in board state 
-        since looping thru all pieces, hashmap is unecessary, just an arraylist
-        //problem3: duplicate values in arr list, not a deal breaker but not great code
-
-    */
 
     private boolean isInCheck;
     
@@ -47,7 +22,15 @@ public class King extends Piece {
     public ArrayList<Integer[]> getUnsafeSpaces() {
         return this.unSafeSpaces;
     }
+    //in GameBoard, if king is in arr list of unsafe spaces, set to true
+    public void setIsInCheck() {
+        isInCheck = true;
+    }
     
+    public boolean getIsInCheck() {
+        return this.isInCheck;
+    }
+
     public void findValidMoves(Piece[][] boardState) {
         ArrayList<Integer[]> moves = new ArrayList<>();
         int currRow = this.getPosition()[0];
