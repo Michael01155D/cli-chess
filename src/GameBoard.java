@@ -4,59 +4,64 @@ import java.util.Scanner;
 
  /*
     current step: need to see if king is in check...
-    using unsafeSpaces arr list, see iterate through them and see if king is present
-    if yes, set king's isInCheck.
+    using unsafeSpaces arr list,  iterate through them and see if king is present
+    if yes, set king's isInCheck to true.
 
-    Then at start of move method, check if that color king isInCheck, if yes, king must be chosen, if king has no valid moves, checkmate.
+    Then at start of move method, check if that player's king isInCheck, if yes, king must be chosen, if king has no valid moves, checkmate.
 */
+
+//At the point where player class seems advisable. Gameplay loop would be: Select Piece (check king in this method), move piece, change player
 
 public class GameBoard {
 
     final int BOARDSIZE = 8;
-    //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
-    final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
-        "a", 0,
-        "b", 1,
-        "c", 2,
-        "d", 3,
-        "e", 4,
-        "f", 5,
-        "g", 6,
-        "h", 7
-    );
 
-    final Map<Integer, String> INDEX_TO_BOARD_COL = Map.of(
-        0, "a",
-        1, "b",
-        2, "c",
-        3, "d",
-        4, "e",
-        5, "f",
-        6, "g",
-        7, "h"
-    );
-
-    final Map<Integer, Integer> BOARD_ROW_TO_INDEX = Map.of(
-        8, 0,
-        7, 1,
-        6, 2,
-        5, 3,
-        4, 4,
-        3, 5,
-        2, 6,
-        1, 7
-    );
-
-    final Map <Integer, Integer> INDEX_TO_BOARD_ROW = Map.of(
-        0, 8,
-        1, 7,
-        2, 6,
-        3, 5,
-        4, 4,
-        5, 3,
-        6, 2,
-        7, 1
-    );
+        //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
+        //todo: refactor so that these maps arent needed here, only in GameHandler class
+        final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
+            "a", 0,
+            "b", 1,
+            "c", 2,
+            "d", 3,
+            "e", 4,
+            "f", 5,
+            "g", 6,
+            "h", 7
+        );
+    
+        final Map<Integer, String> INDEX_TO_BOARD_COL = Map.of(
+            0, "a",
+            1, "b",
+            2, "c",
+            3, "d",
+            4, "e",
+            5, "f",
+            6, "g",
+            7, "h"
+        );
+    
+        final Map<Integer, Integer> BOARD_ROW_TO_INDEX = Map.of(
+            8, 0,
+            7, 1,
+            6, 2,
+            5, 3,
+            4, 4,
+            3, 5,
+            2, 6,
+            1, 7
+        );
+    
+        final Map <Integer, Integer> INDEX_TO_BOARD_ROW = Map.of(
+            0, 8,
+            1, 7,
+            2, 6,
+            3, 5,
+            4, 4,
+            5, 3,
+            6, 2,
+            7, 1
+        );
+    
 
     private Piece[][] board;
     private ArrayList<Piece> activeWhitePieces;
@@ -119,15 +124,7 @@ public class GameBoard {
         return color.equals("white") ? this.underAttackByWhite : this.underAttackByBlack;
     }
 
-    //for testing:
-    public void printUnsafeSpaces(String color) {
-        ArrayList<Integer[]> spaces = this.getSpacesUnderAttack(color);
-        String oppoColor = color.equals("white") ? "black" : "white";
-        System.out.println(oppoColor + " King cannot move to: ");
-        for (Integer[] space: spaces) {
-            System.out.println("(" + INDEX_TO_BOARD_COL.get(space[1]) + INDEX_TO_BOARD_ROW.get(space[0]) +")");
-        }
-    }
+
 
     public void setUpBoard() {
         for (int i = 0; i < 2; i++) {
@@ -178,9 +175,11 @@ public class GameBoard {
     //to (probably) be refactored into Player class:
 
     public Piece getPiece(int row, int col) {
+
         return getBoard()[row][col];
     }
-    
+        
+
     //get user input for next move in format "col""row" (ex: a5). then check if valid, if valid, move piece, update board
     //todos: 1. loop until input is a valid move. 2. add in the concept of check and capturing pieces. 
     public void movePiece(Piece piece) {
