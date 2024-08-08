@@ -1,16 +1,5 @@
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Scanner;
-
- /*
-    current step: need to see if king is in check...
-    using unsafeSpaces arr list,  iterate through them and see if king is present
-    if yes, set king's isInCheck to true.
-
-    Then at start of move method, check if that player's king isInCheck, if yes, king must be chosen, if king has no valid moves, checkmate.
-*/
-
-//At the point where player class seems advisable. Gameplay loop would be: Select Piece (check king in this method), move piece, change player
 
 public class GameBoard {
 
@@ -18,17 +7,15 @@ public class GameBoard {
 
         //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
         //todo: refactor so that these maps arent needed here, only in GameHandler class
-        final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
-            "a", 0,
-            "b", 1,
-            "c", 2,
-            "d", 3,
-            "e", 4,
-            "f", 5,
-            "g", 6,
-            "h", 7
-        );
-    
+
+        public static final String ANSI_WHITE = "\u001B[37m";
+        public static final String ANSI_RESET = "\u001B[0m";
+        public static final String ANSI_BLACK = "\u001B[30m";
+        public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+        public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
+
+
+            
         final Map<Integer, String> INDEX_TO_BOARD_COL = Map.of(
             0, "a",
             1, "b",
@@ -38,17 +25,6 @@ public class GameBoard {
             5, "f",
             6, "g",
             7, "h"
-        );
-    
-        final Map<Integer, Integer> BOARD_ROW_TO_INDEX = Map.of(
-            8, 0,
-            7, 1,
-            6, 2,
-            5, 3,
-            4, 4,
-            3, 5,
-            2, 6,
-            1, 7
         );
     
         final Map <Integer, Integer> INDEX_TO_BOARD_ROW = Map.of(
@@ -160,7 +136,14 @@ public class GameBoard {
             System.out.print(8 - i + " |");
             for (Piece piece: board[i]){
                 String toPrint = piece == null ? " " : piece.toString().substring(0, 1);
-                System.out.print(" " + toPrint + " |");
+                if (piece != null && piece.getColor().equals("white")) {
+                    System.out.print(ANSI_WHITE_BACKGROUND + ANSI_BLACK + " " + toPrint + " " + ANSI_RESET + "|");
+                } else if (piece !=null) {
+                    System.out.print(ANSI_BLACK_BACKGROUND + ANSI_WHITE + " " + toPrint + " " + ANSI_RESET + "|");
+                } 
+                else {
+                    System.out.print(" " + toPrint + " |");
+                }
             }
             System.out.println(" " + (8 - i));
             System.out.println(lineBreak);

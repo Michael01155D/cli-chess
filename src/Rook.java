@@ -20,10 +20,8 @@ public class Rook extends Piece {
     private void addMoves(String dir, Piece[][] boardState, ArrayList<Integer[]> moves) {
         int currRow = this.getPosition()[0];
         int currCol = this.getPosition()[1];
-        System.out.println("curr row is " + currRow + " curr col is " + currCol);
         int nextRow = currRow;
         int nextCol = currCol;
-        System.out.println("dir is " + dir);
         switch(dir) {
             case "up":
                 nextRow = currRow -1;
@@ -40,20 +38,16 @@ public class Rook extends Piece {
             default:
                 break;
         }
-        System.out.println("nextRow is " + nextRow);
-        System.out.println("nextCol is " + nextCol);
-        boolean inBound = nextRow < 8 && nextRow > -1 && nextCol < 8 && nextCol > -1;
 
+        boolean inBound = nextRow < 8 && nextRow > -1 && nextCol < 8 && nextCol > -1;
         while (inBound) {
-            System.out.println("nextRow is " + nextRow);
-            System.out.println("nextCol is " + nextCol);
             if (boardState[nextRow][nextCol] != null) {
                 if (!boardState[nextRow][nextCol].getColor().equals(this.getColor())) {
                     moves.add(new Integer[] {nextRow, nextCol});
                 }
                 break;
             }
-            
+
             moves.add(new Integer[] {nextRow, nextCol});
             nextRow = advanceRow(dir, nextRow);
             nextCol = advanceCol(dir, nextCol);
