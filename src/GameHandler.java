@@ -124,6 +124,7 @@ public class GameHandler {
             String currColor = activePlayer.getColor();
             Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
             //once Piece is selected, find its valid moves (if any)
+            //CURRENT BUG: this isnt updating (?) if original selectedPiece had no valid moves?
             gameBoard.seeValidMoves(selectedPiece);
             selectedPiece.findValidMoves(this.gameBoard.getBoard());
             int numValidMoves = selectedPiece.getValidMoves().size();
