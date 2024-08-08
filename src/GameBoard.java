@@ -68,12 +68,9 @@ public class GameBoard {
     private ArrayList<Piece> activeBlackPieces;
     //maps for each board space that is unsafe for opposite color king;
     private ArrayList<Integer[]> underAttackByWhite;
-    private ArrayList<Integer[]> underAttackByBlack; 
-
-    private Scanner inputScanner;    
+    private ArrayList<Integer[]> underAttackByBlack;   
     
     public GameBoard(){
-        this.inputScanner = new Scanner(System.in);
         this.board = new Piece[BOARDSIZE][BOARDSIZE];
         this.activeWhitePieces = createPieces("white");
         this.activeBlackPieces = createPieces("black");
@@ -123,7 +120,6 @@ public class GameBoard {
     public ArrayList<Integer[]> getSpacesUnderAttack (String color) {
         return color.equals("white") ? this.underAttackByWhite : this.underAttackByBlack;
     }
-
 
 
     public void setUpBoard() {
@@ -180,65 +176,37 @@ public class GameBoard {
     }
         
 
-    //get user input for next move in format "col""row" (ex: a5). then check if valid, if valid, move piece, update board
-    //todos: 1. loop until input is a valid move. 2. add in the concept of check and capturing pieces. 
-    public void movePiece(Piece piece) {
-        piece.findValidMoves(getBoard());
-        ArrayList<Integer[]> validMoves = piece.getValidMoves();
-        if (validMoves.isEmpty()) {
-            System.out.println("This piece has no valid moves available, please choose another");
-            return;
-        }
-        int[] prevPosition = piece.getPosition();
-        int prevRow = prevPosition[0];
-        int prevCol = prevPosition[1];
-        //use maps to convert indicies of piece to labels used on board
-        String boardCol = INDEX_TO_BOARD_COL.get(prevCol);
-        int boardRow = INDEX_TO_BOARD_ROW.get(prevRow);
-    
-        System.out.println("Where will you move the " + piece + " positioned at " + boardCol + boardRow +"?");
-        String col = "";
-        String row = "-1"; //-1 to allow parseInt on first check
-        while (!BOARD_COL_TO_INDEX.containsKey(col)) {
-            System.out.println("Please enter the column to move to (a to h) :");
-            col = inputScanner.nextLine();
-        }
-        while (row.isEmpty() || !("12345678".contains(row))) {
-            System.out.println("Please enter the row to move to (1 to 8)");
-            row = inputScanner.nextLine();
-        }
-        //check all possible valid moves to see if userinput is valid
-        for (Integer[] validMove: validMoves) {
-            int newRowIndex = BOARD_ROW_TO_INDEX.get(Integer.parseInt(row));
-            int newColIndex = BOARD_COL_TO_INDEX.get(col);
-            if (validMove[0] == newRowIndex && validMove[1] == newColIndex) {
-                System.out.println("Moving piece to " + col + row);
-                piece.setPosition(new int[] {newRowIndex, newColIndex} );
-                this.board[prevRow][prevCol] = null;
-                this.board[newRowIndex][newColIndex] = piece;
-                displayBoard();
-                //update lists of spaces that kings can't access:
-                setSpacesUnderAttack("white");
-                setSpacesUnderAttack("black");
-                //update each King's list of unsafe spaces:
-                for (Piece whitePiece : getActivePieces("white")) {
-                    if (whitePiece instanceof King) {
-                        ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-                    }
-                }
+    //called in the GameHandler class. Before calling, piece is guaranteed to have at least 1 valid move, which is passed as 2nd arg [row, col]
+    public void movePiece(Piece piece, int[] validMove) {
+        int prevRow = piece.getPosition()[0];
+        int prevCol = piece.getPosition()[1];
+        int newRow = validMove[0];
+        int newCol = validMove[1];
+        piece.setPosition(new int[] {newRow, newCol} );
+            this.board[prevRow][prevCol] = null;
+            //***TODO: If this.board[newRow][newCol] is not null, call capturePiece() method
+            this.board[newRow][newCol] = piece;
+            //***TODO: add method to Check if Piece is Pawn and newRow is 0 or 7, if yes turn into queen (or let player choose via input)
 
-                for (Piece blackPiece : getActivePieces("black")) {
-                    if (blackPiece instanceof King) {
-                        ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-                    }
+            //update lists of spaces that kings can't access:
+            setSpacesUnderAttack("white");
+            setSpacesUnderAttack("black");
+            //update each King's list of unsafe spaces:
+            for (Piece whitePiece : getActivePieces("white")) {
+                if (whitePiece instanceof King) {
+                    ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
                 }
-
-                return;
             }
+
+            for (Piece blackPiece : getActivePieces("black")) {
+                if (blackPiece instanceof King) {
+                    ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+                }
+            }
+
+            return;
         } 
-         //todo: refactor so that the user re-enters input until a valid move is given.
-        System.out.println("move wasnt valid :(");
-    }
+    
 
     //probably a temporary method for debugging
     public void seeValidMoves(Piece piece) {

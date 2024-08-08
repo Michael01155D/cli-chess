@@ -3,19 +3,20 @@ CLI version of chess in java. The goal of this project is to serve as a starting
 ////Current Progress///
 
 - Board initializes with proper pieces
-- Pawn movement logic is (mostly) complete (except transforming at board end and en passant)
-- Knight movement logic seems complete
-- Rook movement logic seems complete
-
-////Currently Todo//
-
-- Finish remaining pieces move logic
+- Pieces movement logic seems correct
+- kings cannot move into check
+- king must be moved if in check
+- game ends if king in check and has no valid moves
 
 
 ///Future Todos//
 
+-capturing pieces
+
+-promoting pawn at edge of board
+
 - distinguish between black and white pieces visually
 
-- implement Player class
+- castling (if king and rook havent moved, if no pieces between them, if no spaces betwen them in danger, if king not in check)
 
-- implement game flow (select piece -> move piece -> check if check -> check if check mate -> next move)
+-en passant (need to read the rules on this to determine logic)

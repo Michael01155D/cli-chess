@@ -10,6 +10,7 @@ public class GameHandler {
     private GameBoard gameBoard;
     private Scanner inputScanner;
     private Player activePlayer;
+    private boolean isGameOver;
 
     //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
     final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
@@ -45,15 +46,15 @@ public class GameHandler {
         "1", 7
     );
 
-    final Map <Integer, Integer> INDEX_TO_BOARD_ROW = Map.of(
-        0, 8,
-        1, 7,
-        2, 6,
-        3, 5,
-        4, 4,
-        5, 3,
-        6, 2,
-        7, 1
+    final Map <Integer, String> INDEX_TO_BOARD_ROW = Map.of(
+        0, "8",
+        1, "7",
+        2, "6",
+        3, "5",
+        4, "4",
+        5, "3",
+        6, "2",
+        7, "1"
     );
 
     public GameHandler() {
@@ -69,7 +70,7 @@ public class GameHandler {
         String name = "";
         while (name.trim().length() > 20 || name.trim().length() < 1 || name.equals(prevPlayerName)) {
             System.out.println("Player " + playerNum +", please enter your name (between 1 to 20 characters)");
-            name = inputScanner.next();
+            name = inputScanner.nextLine();
             if (name.equals(prevPlayerName)) {
                 System.out.println("Please choose a unique player name");
             }
@@ -80,14 +81,21 @@ public class GameHandler {
 
     public void initializePlayers() {
         //prev player name irrelevant for nameOne
-        String nameOne = createPlayerName("One", " ");
-        String nameTwo = createPlayerName("Two", nameOne);
-        Random rand = new Random();
-        int colorSelection = rand.nextInt(2);
-        String nameForWhite = colorSelection == 0 ? nameOne : nameTwo;
-        String nameForBlack = nameForWhite.equals(nameOne) ? nameTwo : nameOne;
-        white = new Player(nameForWhite, "white", gameBoard.getActivePieces("white"));
-        black = new Player(nameForBlack, "black", gameBoard.getActivePieces("black"));
+
+        //TODO: UNCOMMENT THIS BLOCK WHEN DONE TESTING (commented out to expedite game init process)
+
+        // String nameOne = createPlayerName("One", " ");
+        // String nameTwo = createPlayerName("Two", nameOne);
+        // Random rand = new Random();
+        // int colorSelection = rand.nextInt(2);
+        // String nameForWhite = colorSelection == 0 ? nameOne : nameTwo;
+        // String nameForBlack = nameForWhite.equals(nameOne) ? nameTwo : nameOne;
+        // white = new Player(nameForWhite, "white", gameBoard.getActivePieces("white"));
+        // black = new Player(nameForBlack, "black", gameBoard.getActivePieces("black"));
+
+        //TODO: delete these 2 lines when done testing
+        white = new Player("w", "white", gameBoard.getActivePieces("white"));
+        black = new Player("b", "black", gameBoard.getActivePieces("black"));
     }
 
     public Player getActivePlayer() {
@@ -109,34 +117,41 @@ public class GameHandler {
 
     //gameflow: display board, choose a piece, move piece, check gameOver, swap player. 
     public void play() {
-        this.gameBoard.displayBoard();
-        //check if player's king is in check, if yes, must select king
-        boolean isInCheck = activePlayer.getKing().getIsInCheck();
-        String currColor = activePlayer.getColor();
-        Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
-        int numValidMoves = selectedPiece.getValidMoves().size();
-        if (isInCheck && numValidMoves == 0) {
-            //todo: implement a proper game over method
-            System.out.println("Game over!");
-            return;
-        }
+        while (!isGameOver){
+            this.gameBoard.displayBoard();
+            //check if player's king is in check, if yes, must select king
+            boolean isInCheck = activePlayer.getKing().getIsInCheck();
+            String currColor = activePlayer.getColor();
+            Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
+            //once Piece is selected, find its valid moves (if any)
+            selectedPiece.findValidMoves(this.gameBoard.getBoard());
+            int numValidMoves = selectedPiece.getValidMoves().size();
+            //if king in check and it cant move, game over
+            if (isInCheck && numValidMoves == 0) {
+                //todo: implement a proper game over method
+                this.isGameOver = true;
+                break;
+            }
 
-        while (numValidMoves == 0) {
-            System.out.println("This piece has no valid moves, please select another piece.");
-            selectedPiece = getPieceFromInput(currColor);
-            numValidMoves = selectedPiece.getValidMoves().size();
-        }
-    
-        int[] move = getMoveFromInput(selectedPiece);
-        //if valid move possible, prompt user for a move, keep prompting until move is valid
-        while (!moveIsValid(move, selectedPiece.getValidMoves())){
-            move = getMoveFromInput(selectedPiece);
-        }
-
-        //**TODO next: then perform move, updating board state and keeping track of which spaces king cant move to
+            while (numValidMoves == 0) {
+                System.out.println("This piece has no valid moves, please select another piece.");
+                selectedPiece = getPieceFromInput(currColor);
+                numValidMoves = selectedPiece.getValidMoves().size();
+            }
         
-        //after everything else:
-        swapTurn();
+            int[] move = getMoveFromInput(selectedPiece);
+            //if valid move possible, prompt user for a move, keep prompting until move is valid
+            while (!moveIsValid(move, selectedPiece.getValidMoves())){
+                move = getMoveFromInput(selectedPiece);
+            }
+
+            //perform move, updating board state
+            gameBoard.movePiece(selectedPiece, move);
+            
+            //after everything else:
+            swapTurn();
+        }
+        System.out.println("Game over! bye");
     }
 
     public String getColInput() {
@@ -164,17 +179,23 @@ public class GameHandler {
                 System.out.println("That piece belongs to the opponent!");
             }
             System.out.println(activePlayer.getName() + " select a " + currColor + " piece to move");
-            int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
             int colIndex = BOARD_COL_TO_INDEX.get(getColInput());
+            int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
             selectedPiece = this.gameBoard.getPiece(rowIndex, colIndex);
+            if (selectedPiece == null) {
+                System.out.println("There was no piece found at that position");
+            }
         }
+
         return selectedPiece;
     }
 
     public int[] getMoveFromInput(Piece selectedPiece) {
-        System.out.println("Select a space on the board to move the " + selectedPiece);
-        int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
+        String currRow = INDEX_TO_BOARD_ROW.get(selectedPiece.getPosition()[0]);
+        String currCol = INDEX_TO_BOARD_COL.get(selectedPiece.getPosition()[1]);
+        System.out.println("Select a valid space on the board to move the " + selectedPiece + " at " + currCol + currRow);
         int colIndex = BOARD_COL_TO_INDEX.get(getColInput());
+        int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
         return new int[] {rowIndex, colIndex};
     }
 
