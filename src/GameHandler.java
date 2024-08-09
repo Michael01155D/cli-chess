@@ -124,8 +124,7 @@ public class GameHandler {
             String currColor = activePlayer.getColor();
             Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
             //once Piece is selected, find its valid moves (if any)
-            //CURRENT BUG: this isnt updating (?) if original selectedPiece had no valid moves?
-            gameBoard.seeValidMoves(selectedPiece);
+
             selectedPiece.findValidMoves(this.gameBoard.getBoard());
             int numValidMoves = selectedPiece.getValidMoves().size();
             //if king in check and it cant move, game over
@@ -138,8 +137,11 @@ public class GameHandler {
             while (numValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
+                gameBoard.seeValidMoves(selectedPiece);
+                selectedPiece.findValidMoves(this.gameBoard.getBoard());
                 numValidMoves = selectedPiece.getValidMoves().size();
             }
+            gameBoard.seeValidMoves(selectedPiece);
         
             int[] move = getMoveFromInput(selectedPiece);
             //if valid move possible, prompt user for a move, keep prompting until move is valid
