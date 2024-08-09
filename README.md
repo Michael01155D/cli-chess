@@ -8,14 +8,13 @@ CLI version of chess in java. The goal of this project is to serve as a starting
 - king must be moved if in check
 - game ends if king in check and has no valid moves
 
+////CURRENT BUG ///
+
+if selecting a piece with no valid moves, selecting another piece will print their valid moves twice
 
 ///Future Todos//
 
--capturing pieces
-
 -promoting pawn at edge of board
-
-- distinguish between black and white pieces visually
 
 - castling (if king and rook havent moved, if no pieces between them, if no spaces betwen them in danger, if king not in check)
 

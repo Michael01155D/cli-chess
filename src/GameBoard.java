@@ -94,6 +94,15 @@ public class GameBoard {
         return color.equals("white") ? this.activeWhitePieces : this.activeBlackPieces;
     }
 
+    //used for Kings so they can temporarily remove a piece while finding valid moves and used for pawn promotion
+    public void addActivePiece(Piece piece) {
+        if (piece.getColor().equals("white")) {
+            this.activeWhitePieces.add(piece);
+            return;
+        }
+        this.activeBlackPieces.add(piece);
+    }
+
     //use color white to determine black king's unsafe spaces, and vice versa. 
     public ArrayList<Integer[]> getSpacesUnderAttack (String color) {
         return color.equals("white") ? this.underAttackByWhite : this.underAttackByBlack;
@@ -123,6 +132,14 @@ public class GameBoard {
                 }
             } else {
                 piece.findValidMoves(board);
+                //debugging:
+                if (piece instanceof Queen) {
+                    System.out.println("queen is currently at position: " + INDEX_TO_BOARD_COL.get(piece.getPosition()[1]) + INDEX_TO_BOARD_ROW.get(piece.getPosition()[0]));
+                    System.out.println("queen's valid moves are: ");
+                    for (Integer[] move : piece.getValidMoves()) {
+                        System.out.println(INDEX_TO_BOARD_COL.get(move[1]) + INDEX_TO_BOARD_ROW.get(move[0]));
+                    }
+                }
                 for (Integer[] move: piece.getValidMoves()) {
                     spacesUnderAttack.add(move);
                 }
@@ -154,16 +171,18 @@ public class GameBoard {
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
 
-        //update each King's list of unsafe spaces:
+        //update each King's list of unsafe spaces and see if they're in check:
         for (Piece whitePiece : getActivePieces("white")) {
             if (whitePiece instanceof King) {
                 ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
+                ((King)whitePiece).setIsInCheck();
             }
         }
 
         for (Piece blackPiece : getActivePieces("black")) {
             if (blackPiece instanceof King) {
                 ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+                ((King)blackPiece).setIsInCheck();
             }
         }
 

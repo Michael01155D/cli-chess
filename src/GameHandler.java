@@ -107,12 +107,8 @@ public class GameHandler {
     }
 
     public void swapTurn() {
-        if (getActivePlayer() == white) {
-            setActivePlayer(black); 
-        }
-         else { 
-            setActivePlayer(white);
-        }
+        Player nextPlayer = getActivePlayer() == white ? black : white;
+        setActivePlayer(nextPlayer);
     }
 
     //gameflow: display board, choose a piece, move piece, check gameOver, swap player. 
@@ -121,11 +117,17 @@ public class GameHandler {
             this.gameBoard.displayBoard();
             //check if player's king is in check, if yes, must select king
             boolean isInCheck = activePlayer.getKing().getIsInCheck();
+            //***CURRENT BUG: isInCheck is not correct. positions are being properly updated, but unsafeSpaces dont seem to be. 
+            System.out.println("result of isInCheck for player: " + activePlayer.getColor() + " is: " + isInCheck);
             String currColor = activePlayer.getColor();
             Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
             //once Piece is selected, find its valid moves (if any)
+            if (selectedPiece instanceof King) {
+                ((King)selectedPiece).findValidMoves(gameBoard.getBoard(), gameBoard);
+            } else {
+                selectedPiece.findValidMoves(this.gameBoard.getBoard());
+            }
 
-            selectedPiece.findValidMoves(this.gameBoard.getBoard());
             int numValidMoves = selectedPiece.getValidMoves().size();
             //if king in check and it cant move, game over
             if (isInCheck && numValidMoves == 0) {
@@ -137,8 +139,12 @@ public class GameHandler {
             while (numValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
+                if (selectedPiece instanceof King) {
+                    ((King)selectedPiece).findValidMoves(gameBoard.getBoard(), gameBoard);
+                } else {
+                    selectedPiece.findValidMoves(this.gameBoard.getBoard());
+                }
                 gameBoard.seeValidMoves(selectedPiece);
-                selectedPiece.findValidMoves(this.gameBoard.getBoard());
                 numValidMoves = selectedPiece.getValidMoves().size();
             }
             gameBoard.seeValidMoves(selectedPiece);
