@@ -130,29 +130,6 @@ public class GameBoard {
         }
     }
 
-    public void displayBoard() {
-        String lineBreak = "   --------------------------------";
-        System.out.println("    a   b   c   d   e   f   g   h");
-        System.out.println(lineBreak);
-        for (int i = 0; i < board.length; i++){
-            System.out.print(8 - i + " |");
-            for (Piece piece: board[i]){
-                String toPrint = piece == null ? " " : piece.toString().substring(0, 1);
-                if (piece != null && piece.getColor().equals("white")) {
-                    System.out.print(ANSI_WHITE_BACKGROUND + ANSI_BLACK + " " + toPrint + " " + ANSI_RESET + "|");
-                } else if (piece !=null) {
-                    System.out.print(ANSI_BLACK_BACKGROUND + ANSI_WHITE + " " + toPrint + " " + ANSI_RESET + "|");
-                } 
-                else {
-                    System.out.print(" " + toPrint + " |");
-                }
-            }
-            System.out.println(" " + (8 - i));
-            System.out.println(lineBreak);
-        }
-        System.out.println("    a   b   c   d   e   f   g   h");
-    }
-
     //to (probably) be refactored into Player class:
 
     public Piece getPiece(int row, int col) {
@@ -216,6 +193,31 @@ public class GameBoard {
     public void removeActivePiece(Piece piece) {
         String color = piece.getColor();
         getActivePieces(color).remove(piece);
+    }
+
+    public void displayBoard() {
+        String whiteSpaces = "                                      ";
+        System.out.println();
+        String lineBreak = whiteSpaces + "   --------------------------------";
+        System.out.println(whiteSpaces + "    a   b   c   d   e   f   g   h");
+        System.out.println(lineBreak);
+        for (int i = 0; i < board.length; i++){
+            System.out.print(whiteSpaces + (8 - i) + " |");
+            for (Piece piece: board[i]){
+                String toPrint = piece == null ? " " : piece.toString().substring(0, 1);
+                if (piece != null && piece.getColor().equals("white")) {
+                    System.out.print(ANSI_WHITE_BACKGROUND + ANSI_BLACK + " " + toPrint + " " + ANSI_RESET + "|");
+                } else if (piece !=null) {
+                    System.out.print(ANSI_BLACK_BACKGROUND + ANSI_WHITE + " " + toPrint + " " + ANSI_RESET + "|");
+                } 
+                else {
+                    System.out.print(" " + toPrint + " |");
+                }
+            }
+            System.out.println(" " + (8 - i));
+            System.out.println(lineBreak);
+        }
+        System.out.println(whiteSpaces + "    a   b   c   d   e   f   g   h");
     }
 
     //for debugging and testing moves
