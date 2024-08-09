@@ -28,6 +28,15 @@ public class Player {
         this.pieces = pieces;
     }
 
+    public void removePiece(Piece piecetoRemove) {
+        for (Piece piece : this.getPieces()) {
+            if (piece == piecetoRemove) {
+                this.getPieces().remove(piecetoRemove);
+                return;
+            }
+        }
+    }
+
     public King getKing() {
         for (Piece piece: getPieces()) {
             if (piece instanceof King) {

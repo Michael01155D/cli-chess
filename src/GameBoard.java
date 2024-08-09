@@ -4,15 +4,17 @@ import java.util.Map;
 public class GameBoard {
 
     final int BOARDSIZE = 8;
+    //used for displayBoard(): 
+    public static final String ANSI_WHITE = "\u001B[37m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+    public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
+
+
 
         //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
         //todo: refactor so that these maps arent needed here, only in GameHandler class
-
-        public static final String ANSI_WHITE = "\u001B[37m";
-        public static final String ANSI_RESET = "\u001B[0m";
-        public static final String ANSI_BLACK = "\u001B[30m";
-        public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
-        public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
 
 
             
@@ -166,32 +168,33 @@ public class GameBoard {
         int newRow = validMove[0];
         int newCol = validMove[1];
         piece.setPosition(new int[] {newRow, newCol} );
-            this.board[prevRow][prevCol] = null;
-            //***TODO: If this.board[newRow][newCol] is not null, call capturePiece() method
-            this.board[newRow][newCol] = piece;
-            //***TODO: add method to Check if Piece is Pawn and newRow is 0 or 7, if yes turn into queen (or let player choose via input)
+        this.board[prevRow][prevCol] = null;
+        this.board[newRow][newCol] = piece;
 
-            //update lists of spaces that kings can't access:
-            setSpacesUnderAttack("white");
-            setSpacesUnderAttack("black");
-            //update each King's list of unsafe spaces:
-            for (Piece whitePiece : getActivePieces("white")) {
-                if (whitePiece instanceof King) {
-                    ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-                }
+        //***TODO: add method to Check if Piece is Pawn and newRow is 0 or 7, if yes turn into queen (or let player choose via input)
+
+        //update lists of spaces that kings can't access:
+        setSpacesUnderAttack("white");
+        setSpacesUnderAttack("black");
+
+        //update each King's list of unsafe spaces:
+        for (Piece whitePiece : getActivePieces("white")) {
+            if (whitePiece instanceof King) {
+                ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
             }
+        }
 
-            for (Piece blackPiece : getActivePieces("black")) {
-                if (blackPiece instanceof King) {
-                    ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-                }
+        for (Piece blackPiece : getActivePieces("black")) {
+            if (blackPiece instanceof King) {
+                ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
             }
+        }
 
-            return;
-        } 
+        return;
+    } 
     
 
-    //probably a temporary method for debugging
+    //print out list of valid moves for a selected piece
     public void seeValidMoves(Piece piece) {
         piece.findValidMoves(getBoard());
         int[] currPosition = piece.getPosition();
@@ -208,6 +211,11 @@ public class GameBoard {
 
     public boolean isEmpty(int row, int col) {
         return getBoard()[row][col] == null;
+    }
+
+    public void removeActivePiece(Piece piece) {
+        String color = piece.getColor();
+        getActivePieces(color).remove(piece);
     }
 
     //for debugging and testing moves

@@ -149,6 +149,16 @@ public class GameHandler {
                 move = getMoveFromInput(selectedPiece);
             }
 
+            //if opponent's piece is at new destination, remove it from board
+            Piece capturedPiece = gameBoard.getBoard()[move[0]][move[1]];
+            if (capturedPiece != null) {
+                gameBoard.removeActivePiece(capturedPiece);
+                if (activePlayer == white) {
+                    black.removePiece(capturedPiece);
+                } else {
+                    white.removePiece(capturedPiece);
+                }
+            }
             //perform move, updating board state
             gameBoard.movePiece(selectedPiece, move);
             
