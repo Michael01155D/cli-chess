@@ -89,7 +89,6 @@ public class King extends Piece {
                     put king back to his spot
                 */
                 if (boardState[nextRow][nextCol] != null) {
-                    System.out.println("****reached code attempting to prevent king from taking protected piece");
                     //temporarily change boardstate to simulate king taking the piece
                     Piece pieceToCapture = boardState[nextRow][nextCol];
                     boardState[currRow][currCol] = null;
@@ -101,7 +100,6 @@ public class King extends Piece {
                     for (Integer[] unsafe : board.getSpacesUnderAttack(pieceToCapture.getColor())) {
                         //capturing the piece would be King in check, set isSafeMove to false before reverting all changes
                         if (unsafe[0] == nextRow && unsafe[1] == nextCol) {
-                            System.out.println("************* REACHED UNSAFE CHECK *************8");
                             isSafeMove = false;
                             break;
                         }

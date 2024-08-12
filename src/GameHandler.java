@@ -117,8 +117,6 @@ public class GameHandler {
             this.gameBoard.displayBoard();
             //check if player's king is in check, if yes, must select king
             boolean isInCheck = activePlayer.getKing().getIsInCheck();
-            //***CURRENT BUG: isInCheck is not correct. positions are being properly updated, but unsafeSpaces dont seem to be. 
-            System.out.println("result of isInCheck for player: " + activePlayer.getColor() + " is: " + isInCheck);
             String currColor = activePlayer.getColor();
             Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
             //once Piece is selected, find its valid moves (if any)

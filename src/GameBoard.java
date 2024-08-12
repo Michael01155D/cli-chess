@@ -132,14 +132,6 @@ public class GameBoard {
                 }
             } else {
                 piece.findValidMoves(board);
-                //debugging:
-                if (piece instanceof Queen) {
-                    System.out.println("queen is currently at position: " + INDEX_TO_BOARD_COL.get(piece.getPosition()[1]) + INDEX_TO_BOARD_ROW.get(piece.getPosition()[0]));
-                    System.out.println("queen's valid moves are: ");
-                    for (Integer[] move : piece.getValidMoves()) {
-                        System.out.println(INDEX_TO_BOARD_COL.get(move[1]) + INDEX_TO_BOARD_ROW.get(move[0]));
-                    }
-                }
                 for (Integer[] move: piece.getValidMoves()) {
                     spacesUnderAttack.add(move);
                 }
