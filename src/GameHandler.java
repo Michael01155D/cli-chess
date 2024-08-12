@@ -142,7 +142,6 @@ public class GameHandler {
                 } else {
                     selectedPiece.findValidMoves(this.gameBoard.getBoard());
                 }
-                gameBoard.seeValidMoves(selectedPiece);
                 numValidMoves = selectedPiece.getValidMoves().size();
             }
             gameBoard.seeValidMoves(selectedPiece);
@@ -225,8 +224,6 @@ public class GameHandler {
         }
         return false;
     }
-
-
 
     //for testing:
     public void printUnsafeSpaces(String color) {

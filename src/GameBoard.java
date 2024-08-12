@@ -11,12 +11,8 @@ public class GameBoard {
     public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
     public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
 
-
-
         //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
         //todo: refactor so that these maps arent needed here, only in GameHandler class
-
-
             
         final Map<Integer, String> INDEX_TO_BOARD_COL = Map.of(
             0, "a",
@@ -188,7 +184,7 @@ public class GameBoard {
         int[] currPosition = piece.getPosition();
         String currPositionString = "(" + INDEX_TO_BOARD_COL.get(currPosition[1]) + INDEX_TO_BOARD_ROW.get(currPosition[0]) + ")";
         ArrayList<Integer[]> validMoves = piece.getValidMoves();
-        System.out.println("valid moves of " +piece.getColor() + " " + piece + " at position " + currPositionString + " are:");
+        System.out.println("valid moves of " + piece.getColor() + " " + piece + " at position " + currPositionString + " are:");
         for (Integer[] move : validMoves){
             //convert array indicies (values) to board labels (keys)
             String col = INDEX_TO_BOARD_COL.get(move[1]);
