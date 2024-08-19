@@ -1,10 +1,5 @@
 import java.util.ArrayList;
 
-
-//CURRENT BUG: need to prevent King from being able to take a piece that is protected by another
-//possible solution, when determining king's moves, if move has piece of oppo color, check if that position is in unsafeSpaces
-//^wont work bc that position isnt added to unsafeSpaces. Possible solution is to temporarily remove the piece, update unsafeSpaces, then if 
-// that space is unsafe after removal, put the original piece back and set isInCheck to true. 
 public class King extends Piece {
 
 
