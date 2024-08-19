@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 //In charge of setting up players, printing board, managing turns
@@ -164,6 +165,11 @@ public class GameHandler {
             }
             //perform move, updating board state
             gameBoard.movePiece(selectedPiece, move);
+
+        //if pawn reaches end row, promote it 
+        if (selectedPiece instanceof Pawn &&  (move[0]== 0 || move[0] == 7) ) {
+            promotePawn(selectedPiece);
+        }
             
             //after everything else:
             swapTurn();
@@ -223,6 +229,32 @@ public class GameHandler {
             }
         }
         return false;
+    }
+
+    public void promotePawn(Piece pawn) {
+        if (pawn.getColor().equals("white")) {
+            white.removePiece(pawn);
+        } else {
+            black.removePiece(pawn);
+        }
+        String pieceTypeFromInput = getNewPieceTypeInput(); //CONTINUE FROM HERE
+    }
+    //helper method for promoting pawns
+    public String getNewPieceTypeInput() {
+        String newPieceType = "";
+        String[] pieceTypes = {"knight", "rook", "bishop", "queen"};
+        HashSet<String> validPieceNames = new HashSet<>();
+        for (String type : pieceTypes) {
+            validPieceNames.add(type);
+        }
+
+        while (!validPieceNames.contains(newPieceType.toLowerCase().trim())) {
+            System.out.println( getActivePlayer().getName() + ", type the piece to promote your pawn to: ");
+            System.out.println("Options: \"knight\", \"rook\", \"bishop\", \"queen\"");
+            newPieceType = this.inputScanner.nextLine();
+        }
+
+        return newPieceType;
     }
 
     //for testing:
