@@ -37,6 +37,12 @@ public class Player {
         }
     }
 
+    public void addPiece(Piece pieceToAdd) {
+        ArrayList<Piece> pieces = this.getPieces();
+        pieces.add(pieceToAdd);
+        this.setPieces(pieces);
+    }
+
     public King getKing() {
         for (Piece piece: getPieces()) {
             if (piece instanceof King) {

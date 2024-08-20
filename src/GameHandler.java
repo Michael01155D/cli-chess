@@ -166,9 +166,16 @@ public class GameHandler {
             //perform move, updating board state
             gameBoard.movePiece(selectedPiece, move);
 
-        //if pawn reaches end row, promote it 
+        //if pawn reaches end row, promote it then update boardstate
         if (selectedPiece instanceof Pawn &&  (move[0]== 0 || move[0] == 7) ) {
             promotePawn(selectedPiece);
+            gameBoard.setSpacesUnderAttack(currColor);
+            //update the spaces unsafe for the other player's king after replacing the pawn with a new piece:
+            if (activePlayer == white) {
+                black.getKing().setUnsafeSpaces(gameBoard.getSpacesUnderAttack(currColor));
+            } else {
+                white.getKing().setUnsafeSpaces(gameBoard.getSpacesUnderAttack(currColor));
+            }
         }
             
             //after everything else:
@@ -232,12 +239,13 @@ public class GameHandler {
     }
 
     public void promotePawn(Piece pawn) {
-        if (pawn.getColor().equals("white")) {
-            white.removePiece(pawn);
-        } else {
-            black.removePiece(pawn);
-        }
-        String pieceTypeFromInput = getNewPieceTypeInput(); //CONTINUE FROM HERE
+        getActivePlayer().removePiece(pawn);
+        gameBoard.removeActivePiece(pawn);
+        Piece newPiece = createPiece(getNewPieceTypeInput(), pawn);
+        getActivePlayer().addPiece(newPiece);
+        gameBoard.addActivePiece(newPiece);
+        //set position on board of pawn to the new piece:
+        this.gameBoard.getBoard()[pawn.getPosition()[0]][pawn.getPosition()[1]] = newPiece;
     }
     //helper method for promoting pawns
     public String getNewPieceTypeInput() {
@@ -251,10 +259,35 @@ public class GameHandler {
         while (!validPieceNames.contains(newPieceType.toLowerCase().trim())) {
             System.out.println( getActivePlayer().getName() + ", type the piece to promote your pawn to: ");
             System.out.println("Options: \"knight\", \"rook\", \"bishop\", \"queen\"");
-            newPieceType = this.inputScanner.nextLine();
+            newPieceType = this.inputScanner.nextLine().toLowerCase().trim();
         }
 
         return newPieceType;
+    }
+
+    public Piece createPiece(String pieceType, Piece pawn) {
+        Piece newPiece;
+        String color = pawn.getColor();
+        int row = pawn.getPosition()[0];
+        int col = pawn.getPosition()[1];
+        switch (pieceType) {
+            case "knight":
+                newPiece = new Knight(color, new int[] {row, col});
+                break;
+            case "rook":
+                newPiece = new Rook(color, new int[] {row, col});
+                break;
+            case "bishop":
+                newPiece = new Bishop(color, new int[] {row, col});
+                break;
+            case "queen":
+                newPiece = new Queen(color, new int[] {row, col});
+                break;
+            default:
+                newPiece = new Queen(color, new int[] {row, col});
+                break;
+        }
+        return newPiece;
     }
 
     //for testing:
