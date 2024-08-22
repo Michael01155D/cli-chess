@@ -112,20 +112,29 @@ public class GameHandler {
         setActivePlayer(nextPlayer);
     }
 
+    public GameBoard getGameBoard() {
+        return this.gameBoard;
+    }
     //gameflow: display board, choose a piece, move piece, check gameOver, swap player. 
     public void play() {
         while (!isGameOver){
-            this.gameBoard.displayBoard();
-            //check if player's king is in check, if yes, must select king
+            GameBoard board = getGameBoard();
+            board.displayBoard();
+
             boolean isInCheck = activePlayer.getKing().getIsInCheck();
             String currColor = activePlayer.getColor();
+            //TODO: Logic incorrect, if king is in check, other pieces can be moved if doing so takes king out of check
             Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
             //once Piece is selected, find its valid moves (if any)
             if (selectedPiece instanceof King) {
-                ((King)selectedPiece).findValidMoves(gameBoard.getBoard(), gameBoard);
+                ((King)selectedPiece).findValidMoves(board.getBoard(), board);
             } else {
-                selectedPiece.findValidMoves(this.gameBoard.getBoard());
+                selectedPiece.findValidMoves(board.getBoard());
             }
+
+            //Pieces need to not be able to move if doing so puts their king in check. 
+            //remove all moves that would put player's own king in check:
+            removeIllegalMoves(selectedPiece);
 
             int numValidMoves = selectedPiece.getValidMoves().size();
             //if king in check and it cant move, game over
@@ -139,13 +148,15 @@ public class GameHandler {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
                 if (selectedPiece instanceof King) {
-                    ((King)selectedPiece).findValidMoves(gameBoard.getBoard(), gameBoard);
+                    ((King)selectedPiece).findValidMoves(board.getBoard(), board);
                 } else {
-                    selectedPiece.findValidMoves(this.gameBoard.getBoard());
+                    selectedPiece.findValidMoves(board.getBoard());
                 }
+                removeIllegalMoves(selectedPiece);
                 numValidMoves = selectedPiece.getValidMoves().size();
             }
-            gameBoard.seeValidMoves(selectedPiece);
+            
+            board.seeValidMoves(selectedPiece);
         
             int[] move = getMoveFromInput(selectedPiece);
             //if valid move possible, prompt user for a move, keep prompting until move is valid
@@ -154,9 +165,9 @@ public class GameHandler {
             }
 
             //if opponent's piece is at new destination, remove it from board
-            Piece capturedPiece = gameBoard.getBoard()[move[0]][move[1]];
+            Piece capturedPiece = board.getBoard()[move[0]][move[1]];
             if (capturedPiece != null) {
-                gameBoard.removeActivePiece(capturedPiece);
+                board.removeActivePiece(capturedPiece);
                 if (activePlayer == white) {
                     black.removePiece(capturedPiece);
                 } else {
@@ -164,17 +175,17 @@ public class GameHandler {
                 }
             }
             //perform move, updating board state
-            gameBoard.movePiece(selectedPiece, move);
+            board.movePiece(selectedPiece, move);
 
         //if pawn reaches end row, promote it then update boardstate
         if (selectedPiece instanceof Pawn &&  (move[0]== 0 || move[0] == 7) ) {
             promotePawn(selectedPiece);
-            gameBoard.setSpacesUnderAttack(currColor);
+            board.setSpacesUnderAttack(currColor);
             //update the spaces unsafe for the other player's king after replacing the pawn with a new piece:
             if (activePlayer == white) {
-                black.getKing().setUnsafeSpaces(gameBoard.getSpacesUnderAttack(currColor));
+                black.getKing().setUnsafeSpaces(board.getSpacesUnderAttack(currColor));
             } else {
-                white.getKing().setUnsafeSpaces(gameBoard.getSpacesUnderAttack(currColor));
+                white.getKing().setUnsafeSpaces(board.getSpacesUnderAttack(currColor));
             }
         }
             
@@ -202,6 +213,24 @@ public class GameHandler {
         return row;
     }
 
+    public void removeIllegalMoves(Piece piece) {
+        ArrayList<Integer[]> copiedMoves = deepCopyList(piece.getValidMoves());
+        for (Integer[] copiedMove: copiedMoves) {
+            //if move puts own king in check, method will remove it from piece's validMoves list.
+            simulateMove(copiedMove, piece);
+        }
+
+    }
+
+    //helper method to create deep copy of ArrayLists of moves, used to iterate over while modifying the original list of moves
+    public ArrayList<Integer[]> deepCopyList(ArrayList<Integer[]> listToCopy) {
+        ArrayList<Integer[]> copiedList = new ArrayList<>();
+        for (Integer[] element : listToCopy) {
+            copiedList.add(new Integer[] {element[0], element[1]});
+        }
+        return copiedList;
+    }
+
     public Piece getPieceFromInput(String currColor) {
         Piece selectedPiece = null;
         while (selectedPiece == null || !(selectedPiece.getColor().equals(currColor))) {
@@ -211,7 +240,7 @@ public class GameHandler {
             System.out.println(activePlayer.getName() + " select a " + currColor + " piece to move");
             int colIndex = BOARD_COL_TO_INDEX.get(getColInput());
             int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
-            selectedPiece = this.gameBoard.getPiece(rowIndex, colIndex);
+            selectedPiece = getGameBoard().getPiece(rowIndex, colIndex);
             if (selectedPiece == null) {
                 System.out.println("There was no piece found at that position");
             }
@@ -238,15 +267,92 @@ public class GameHandler {
         return false;
     }
 
+    //simulate an ***OTHERWISE VALID*** move to see if doing it would put your king in check. if yes, remove it from the piece's validMoves arrayList
+    public void simulateMove(Integer[] move, Piece piece) {
+        //isLegalMove will be set false if the move being simulated would put player's own king in check. if false, remove the move from piece's validMoves list.
+        boolean isLegalMove = true;
+
+        //***CURRENTLY BUGGED. for debugging: using pawn at d2, aka: [6, 3] */
+        GameBoard board = getGameBoard();
+        Piece[][] boardState = board.getBoard();
+        int currRow = piece.getPosition()[0];
+        int currCol = piece.getPosition()[1];
+        int nextRow = move[0];
+        int nextCol = move[1];
+        //to simulate the move: if its a capture, temporarily remove the captured piece from board and store in variable to put back later
+        Piece pieceToCapture = null;
+        if (boardState[nextRow][nextCol] != null) {
+            pieceToCapture = boardState[nextRow][nextCol];
+        }
+
+        if (pieceToCapture != null) {
+            board.removeActivePiece(pieceToCapture);
+        }
+        //update boardstate to simulate the move
+        boardState[currRow][currCol] = null;
+        boardState[nextRow][nextCol] = piece;
+        piece.setPosition(new int[] {nextRow, nextCol});
+        if (currRow == 6 && currCol == 3) {
+            System.out.println("Looking at pawn at d2, looking at move to: " + INDEX_TO_BOARD_COL.get(nextCol) + INDEX_TO_BOARD_ROW.get(nextRow));
+            System.out.println("if i print board here, d2 should be empty as move is in process of being simulated: ");
+            board.displayBoard();
+        }
+        //update spaces under attack after simulated move is made
+        board.setSpacesUnderAttack("white");
+        board.setSpacesUnderAttack("black");
+        //after simulating move, see if doing so would put own king in check, if so move is unsafe
+        //if piece being moved is white, check the spaces under attack by black, and vice versa
+        String colorToCheck = piece.getColor().equals("white") ? "black" : "white";
+            int kingsRow = getActivePlayer().getKing().getPosition()[0];
+            int kingsCol = getActivePlayer().getKing().getPosition()[1];
+            if (currRow == 6 && currCol == 3) {
+                System.out.println("Looking at pawn at d2, king should be at e1:" + INDEX_TO_BOARD_COL.get(kingsCol) + INDEX_TO_BOARD_ROW.get(kingsRow));
+            }
+            for (Integer[] unsafe : board.getSpacesUnderAttack(colorToCheck)) {
+                //DEBUGGING using pawn at d4 to protect king at d2 from a rook at d6
+                if (currRow == 4 && currCol == 3 && kingsRow == 6 && kingsCol == 3) {
+                System.out.println("unsafe space is: " + INDEX_TO_BOARD_COL.get(unsafe[1]) + INDEX_TO_BOARD_ROW.get(unsafe[0]));
+                }
+                //if making the move would put own King in check, set isSafeMove to false before reverting all changes
+                if (unsafe[0] == kingsRow && unsafe[1] == kingsCol) {
+                    isLegalMove = false;
+                    break;
+                }
+            }
+            //regardless of if move is safe or not, undo the changes to gameBoard and spacesUnderAttack to allow rest of methods to work normally:
+            if (pieceToCapture != null) {
+                board.addActivePiece(pieceToCapture);
+                boardState[nextRow][nextCol] = pieceToCapture;
+            } else {
+                boardState[nextRow][nextCol] = null;
+            }
+            boardState[currRow][currCol] = piece;
+            piece.setPosition(new int[] {currRow, currCol});
+            board.setSpacesUnderAttack("white");
+            board.setSpacesUnderAttack("black");
+            //if move isnt legal, dont add it to piece's new validMoves list:
+            if (!isLegalMove) {
+                ArrayList<Integer[]> newValidMoves = new ArrayList<>();
+                for (Integer[] validMove : piece.getValidMoves()) {
+                    if ( !(validMove[0] == move[0] && validMove[1] == move[1]) ) {
+                        newValidMoves.add(validMove);
+                    }
+                }
+                piece.setValidMoves(newValidMoves);
+            }
+    }
+
     public void promotePawn(Piece pawn) {
+        GameBoard board = getGameBoard();
         getActivePlayer().removePiece(pawn);
-        gameBoard.removeActivePiece(pawn);
+        board.removeActivePiece(pawn);
         Piece newPiece = createPiece(getNewPieceTypeInput(), pawn);
         getActivePlayer().addPiece(newPiece);
-        gameBoard.addActivePiece(newPiece);
+        board.addActivePiece(newPiece);
         //set position on board of pawn to the new piece:
-        this.gameBoard.getBoard()[pawn.getPosition()[0]][pawn.getPosition()[1]] = newPiece;
+        board.getBoard()[pawn.getPosition()[0]][pawn.getPosition()[1]] = newPiece;
     }
+
     //helper method for promoting pawns
     public String getNewPieceTypeInput() {
         String newPieceType = "";
@@ -292,7 +398,7 @@ public class GameHandler {
 
     //for testing:
     public void printUnsafeSpaces(String color) {
-        ArrayList<Integer[]> spaces = gameBoard.getSpacesUnderAttack(color);
+        ArrayList<Integer[]> spaces = getGameBoard().getSpacesUnderAttack(color);
         String oppoColor = color.equals("white") ? "black" : "white";
         System.out.println(oppoColor + " King cannot move to: ");
         for (Integer[] space: spaces) {

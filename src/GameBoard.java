@@ -153,8 +153,6 @@ public class GameBoard {
         this.board[prevRow][prevCol] = null;
         this.board[newRow][newCol] = piece;
 
-        //***TODO: add method to Check if Piece is Pawn and newRow is 0 or 7, if yes turn into queen (or let player choose via input)
-
         //update lists of spaces that kings can't access:
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");

@@ -88,6 +88,7 @@ public class King extends Piece {
                     Piece pieceToCapture = boardState[nextRow][nextCol];
                     boardState[currRow][currCol] = null;
                     boardState[nextRow][nextCol] = this;
+                    this.setPosition(new int[] {nextRow, nextCol});
                     board.removeActivePiece(pieceToCapture);
                     board.setSpacesUnderAttack("white");
                     board.setSpacesUnderAttack("black");
@@ -103,6 +104,7 @@ public class King extends Piece {
                     board.addActivePiece(pieceToCapture);
                     boardState[nextRow][nextCol] = pieceToCapture;
                     boardState[currRow][currCol] = this;
+                    this.setPosition(new int[] {currRow, currCol});
                     board.setSpacesUnderAttack("white");
                     board.setSpacesUnderAttack("black");
                 }
