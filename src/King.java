@@ -41,9 +41,7 @@ public class King extends Piece {
     }
 
     //never used, added as requirement of abstract parent
-    public void findValidMoves(Piece[][] board){}
-
-    public void findValidMoves(Piece[][] boardState, GameBoard board) {
+    public void findValidMoves(Piece[][] boardState){
         ArrayList<Integer[]> moves = new ArrayList<>();
         int currRow = this.getPosition()[0];
         int currCol = this.getPosition()[1];
@@ -59,68 +57,24 @@ public class King extends Piece {
             currRow -1, currCol -1
          };
          for (int i = 0; i < possibleMoves.length; i+=2) {
-            addMove(boardState, possibleMoves[i], possibleMoves[i + 1], moves, currRow, currCol, board);
+            addMove(boardState, possibleMoves[i], possibleMoves[i + 1], moves, currRow, currCol);
          }
         setValidMoves(moves);
     }
 
-    public void addMove(Piece[][] boardState, int nextRow, int nextCol, ArrayList<Integer[]> moves, int currRow, int currCol, GameBoard board) {
+    public void addMove(Piece[][] boardState, int nextRow, int nextCol, ArrayList<Integer[]> moves, int currRow, int currCol) {
         if (nextRow > 7 || nextCol > 7 || nextRow < 0 || nextCol < 0) {
             return;
         }
-
-        //BUG: here, if boardState[nextRow][nextCol] is an opposite player piece, its only safe if that position is not protected by another piece
-        if (boardState[nextRow][nextCol] == null ||
+        
+        //if space to move to is empty or opponent's piece:
+        if (boardState[nextRow][nextCol] == null || 
             (boardState[nextRow][nextCol] != null && !boardState[nextRow][nextCol].getColor().equals(this.getColor()))
-            ) {
-                
-                //use a boolean flag when going thru array of unsafe spaces, add move if flag is true at end. 
-                boolean isSafeMove = true;
-                /*if opponent piece at [nextRow][nextCol], need to see if taking that piece would put king in check
-                    first, store the piece in temp var and take it w the king
-                    update boardstate and update unsafespaces
-                    if king current position after moving is unsafe, the move is not valid
-                    if not valid, revert updates to boardstate and unsafespaces (store prev. vals in temp vars)
-                    put king back to his spot
-                */
-                if (boardState[nextRow][nextCol] != null) {
-                    //temporarily change boardstate to simulate king taking the piece
-                    Piece pieceToCapture = boardState[nextRow][nextCol];
-                    boardState[currRow][currCol] = null;
-                    boardState[nextRow][nextCol] = this;
-                    this.setPosition(new int[] {nextRow, nextCol});
-                    board.removeActivePiece(pieceToCapture);
-                    board.setSpacesUnderAttack("white");
-                    board.setSpacesUnderAttack("black");
-                    //after simulating king taking piece, see if doing so would put king in check, if so move is unsafe
-                    for (Integer[] unsafe : board.getSpacesUnderAttack(pieceToCapture.getColor())) {
-                        //capturing the piece would be King in check, set isSafeMove to false before reverting all changes
-                        if (unsafe[0] == nextRow && unsafe[1] == nextCol) {
-                            isSafeMove = false;
-                            break;
-                        }
-                    }
-                    //regardless of if move is safe or not, undo the changes to gameBoard state to allow rest of methods to work normally:
-                    board.addActivePiece(pieceToCapture);
-                    boardState[nextRow][nextCol] = pieceToCapture;
-                    boardState[currRow][currCol] = this;
-                    this.setPosition(new int[] {currRow, currCol});
-                    board.setSpacesUnderAttack("white");
-                    board.setSpacesUnderAttack("black");
-                }
-
-            for (Integer[] unsafeSpace : getUnsafeSpaces()) {
-                //if the possible move is in list of unsafe spaces, dont add it
-                if ((unsafeSpace[0] == nextRow && unsafeSpace[1] == nextCol) ) {
-                    isSafeMove = false;
-                    break;
-                }
-            }
-            if (isSafeMove) {
+            ) 
+            {
                 moves.add(new Integer[] {nextRow, nextCol});
             }
-        } 
-    }
+    } 
 
     //for debugging.
     public void printUnsafeSpaces() {

@@ -3,6 +3,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+
+//Current issue: if player is in check, need to be able to only select pieces that can get player out of check. 
+// if no such pieces exist, game over. 
+//CURRENT BUG SEE LINE ~400. Moves are remaining valid even if after making them, king is in check. need to debug removeIllegalmoves/simulate move methods. 
+
 //In charge of setting up players, printing board, managing turns
 public class GameHandler {
 
@@ -120,41 +125,36 @@ public class GameHandler {
         while (!isGameOver){
             GameBoard board = getGameBoard();
             board.displayBoard();
-
+            //find all the valid/legal moves for the players' pieces
+            findPlayerValidMoves();
             boolean isInCheck = activePlayer.getKing().getIsInCheck();
             String currColor = activePlayer.getColor();
-            //TODO: Logic incorrect, if king is in check, other pieces can be moved if doing so takes king out of check
-            Piece selectedPiece = isInCheck ? activePlayer.getKing() : getPieceFromInput(currColor);
-            //once Piece is selected, find its valid moves (if any)
-            if (selectedPiece instanceof King) {
-                ((King)selectedPiece).findValidMoves(board.getBoard(), board);
-            } else {
-                selectedPiece.findValidMoves(board.getBoard());
-            }
-
-            //Pieces need to not be able to move if doing so puts their king in check. 
-            //remove all moves that would put player's own king in check:
+            
+            Piece selectedPiece =  getPieceFromInput(currColor);
+            // //Pieces need to not be able to move if doing so results in their king in check. 
+            // //remove all moves that end with own king in check:
             removeIllegalMoves(selectedPiece);
 
-            int numValidMoves = selectedPiece.getValidMoves().size();
-            //if king in check and it cant move, game over
-            if (isInCheck && numValidMoves == 0) {
+            int pieceValidMoves = selectedPiece.getValidMoves().size();
+            int totalValidMoves = activePlayer.getTotalValidMoves();
+            //TODO: to determine checkmate, need to check all active pieces
+            if (isInCheck && totalValidMoves == 0) {
                 //todo: implement a proper game over method
                 this.isGameOver = true;
                 break;
             }
 
-            while (numValidMoves == 0) {
+            while (pieceValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
-                if (selectedPiece instanceof King) {
-                    ((King)selectedPiece).findValidMoves(board.getBoard(), board);
-                } else {
+                // if (selectedPiece instanceof King) {
+                //     ((King)selectedPiece).findValidMoves(board.getBoard(), board);
+                // } else {
                     selectedPiece.findValidMoves(board.getBoard());
+                //}
+                    removeIllegalMoves(selectedPiece);
+                    pieceValidMoves = selectedPiece.getValidMoves().size();
                 }
-                removeIllegalMoves(selectedPiece);
-                numValidMoves = selectedPiece.getValidMoves().size();
-            }
             
             board.seeValidMoves(selectedPiece);
         
@@ -292,11 +292,6 @@ public class GameHandler {
         boardState[currRow][currCol] = null;
         boardState[nextRow][nextCol] = piece;
         piece.setPosition(new int[] {nextRow, nextCol});
-        if (currRow == 6 && currCol == 3) {
-            System.out.println("Looking at pawn at d2, looking at move to: " + INDEX_TO_BOARD_COL.get(nextCol) + INDEX_TO_BOARD_ROW.get(nextRow));
-            System.out.println("if i print board here, d2 should be empty as move is in process of being simulated: ");
-            board.displayBoard();
-        }
         //update spaces under attack after simulated move is made
         board.setSpacesUnderAttack("white");
         board.setSpacesUnderAttack("black");
@@ -305,14 +300,7 @@ public class GameHandler {
         String colorToCheck = piece.getColor().equals("white") ? "black" : "white";
             int kingsRow = getActivePlayer().getKing().getPosition()[0];
             int kingsCol = getActivePlayer().getKing().getPosition()[1];
-            if (currRow == 6 && currCol == 3) {
-                System.out.println("Looking at pawn at d2, king should be at e1:" + INDEX_TO_BOARD_COL.get(kingsCol) + INDEX_TO_BOARD_ROW.get(kingsRow));
-            }
             for (Integer[] unsafe : board.getSpacesUnderAttack(colorToCheck)) {
-                //DEBUGGING using pawn at d4 to protect king at d2 from a rook at d6
-                if (currRow == 4 && currCol == 3 && kingsRow == 6 && kingsCol == 3) {
-                System.out.println("unsafe space is: " + INDEX_TO_BOARD_COL.get(unsafe[1]) + INDEX_TO_BOARD_ROW.get(unsafe[0]));
-                }
                 //if making the move would put own King in check, set isSafeMove to false before reverting all changes
                 if (unsafe[0] == kingsRow && unsafe[1] == kingsCol) {
                     isLegalMove = false;
@@ -395,6 +383,29 @@ public class GameHandler {
         }
         return newPiece;
     }
+    
+    //called at the start of each turn. pieces each set their valid moves, set players total valid moves
+    public void findPlayerValidMoves() {
+            int totalMoves = 0;
+            for (Piece piece: activePlayer.getPieces()) {
+                piece.findValidMoves(getGameBoard().getBoard());
+                if (piece instanceof Rook) {
+                    System.out.println("before removing rooks illegal moves, the moves are:");
+                    getGameBoard().seeValidMoves(piece);
+                }
+                //once valid moves are found, remove the ones that would leave player's king in check:
+                removeIllegalMoves(piece);
+                if (piece instanceof Rook) {
+                    //CURRENT BUG HERE: removeIllegalMoves not removing all moves that result in king being in check!
+                    System.out.println("after removing rooks illegal moves, remaining moves are:");
+                    getGameBoard().seeValidMoves(piece);
+                }
+                totalMoves += piece.getValidMoves().size();
+            }
+            //
+            activePlayer.setTotalValidMoves(totalMoves);
+        }
+        
 
     //for testing:
     public void printUnsafeSpaces(String color) {

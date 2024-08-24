@@ -2,14 +2,16 @@ import java.util.ArrayList;
 
 
 public class Player {
-    ArrayList <Piece> pieces;
-    String name;
-    String color;
+    private ArrayList <Piece> pieces;
+    private String name;
+    private String color;
+    private int totalValidMoves;
 
     public Player(String name, String color, ArrayList<Piece> pieces) {
         this.name = name;
         this.color = color;
         this.pieces = pieces;
+        this.totalValidMoves = 20;
     }
 
     public String getName() {
@@ -43,6 +45,14 @@ public class Player {
         this.setPieces(pieces);
     }
 
+    public int getTotalValidMoves() {
+        return this.totalValidMoves;
+    }
+
+    public void setTotalValidMoves(int numMoves) {
+        this.totalValidMoves = numMoves;
+    }
+
     public King getKing() {
         for (Piece piece: getPieces()) {
             if (piece instanceof King) {
@@ -52,7 +62,5 @@ public class Player {
         //this shouldnt be reached, if it is then king isnt an active piece somehow
         return null;
     }
-
-    
 
 }

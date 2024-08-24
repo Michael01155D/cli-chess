@@ -178,7 +178,6 @@ public class GameBoard {
 
     //print out list of valid moves for a selected piece
     public void seeValidMoves(Piece piece) {
-        piece.findValidMoves(getBoard());
         int[] currPosition = piece.getPosition();
         String currPositionString = "(" + INDEX_TO_BOARD_COL.get(currPosition[1]) + INDEX_TO_BOARD_ROW.get(currPosition[0]) + ")";
         ArrayList<Integer[]> validMoves = piece.getValidMoves();
