@@ -196,7 +196,7 @@ public class GameHandler {
     public String getColInput() {
         String col = "";
         while (!BOARD_COL_TO_INDEX.containsKey(col)) {
-            System.out.println("Please enter the column (a to h) :");
+            System.out.print("Please enter the column (a to h): ");
             col = inputScanner.nextLine();
         }
         return col;
@@ -205,7 +205,7 @@ public class GameHandler {
     public String getRowInput() { 
         String row = "";
         while (!BOARD_ROW_TO_INDEX.containsKey(row)) {
-            System.out.println("Please enter the row (1 to 8) :");
+            System.out.print("Please enter the row (1 to 8): ");
             row = inputScanner.nextLine();
         }
         return row;
@@ -262,6 +262,7 @@ public class GameHandler {
     }
 
     //simulate an ***OTHERWISE VALID*** move to see if doing it would put your king in check. if yes, remove it from the piece's validMoves arrayList
+    //this method called on each valid move in removeIllegalMoves
     public boolean simulateMove(Integer[] move, Piece piece) {
         //isLegalMove will be set false if the move being simulated would put player's own king in check. if false, remove the move from piece's validMoves list.
         boolean isLegalMove = true;
@@ -291,8 +292,8 @@ public class GameHandler {
         //after simulating move, see if doing so would put own king in check, if so move is unsafe
         //if piece being moved is white, check the spaces under attack by black, and vice versa
         String colorToCheck = piece.getColor().equals("white") ? "black" : "white";
-            int kingsRow = getActivePlayer().getKing().getPosition()[0];
-            int kingsCol = getActivePlayer().getKing().getPosition()[1];
+            int kingsRow = (piece instanceof King) ? nextRow : getActivePlayer().getKing().getPosition()[0];
+            int kingsCol = (piece instanceof King) ? nextCol : getActivePlayer().getKing().getPosition()[1];
             for (Integer[] unsafe : board.getSpacesUnderAttack(colorToCheck)) {
                 //if making the move would put own King in check, set isSafeMove to false before reverting all changes
                 if (unsafe[0] == kingsRow && unsafe[1] == kingsCol) {
