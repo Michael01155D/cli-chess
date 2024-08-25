@@ -133,19 +133,14 @@ public class GameHandler {
         while (!isGameOver){
             GameBoard board = getGameBoard();
             board.displayBoard();
-            //find all the valid/legal moves for the players' pieces
+            //find all the legal moves for the players' pieces
             findPlayerValidMoves();
             boolean isInCheck = activePlayer.getKing().getIsInCheck();
             String currColor = activePlayer.getColor();
-            
             Piece selectedPiece =  getPieceFromInput(currColor);
-            // //Pieces need to not be able to move if doing so results in their king in check. 
-            // //remove all moves that end with own king in check:
-            removeIllegalMoves(selectedPiece);
-
             int pieceValidMoves = selectedPiece.getValidMoves().size();
             int totalValidMoves = activePlayer.getTotalValidMoves();
-            //TODO: to determine checkmate, need to check all active pieces
+          
             if (isInCheck && totalValidMoves == 0) {
                 //todo: implement a proper game over method
                 this.isGameOver = true;
@@ -155,14 +150,8 @@ public class GameHandler {
             while (pieceValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
-                // if (selectedPiece instanceof King) {
-                //     ((King)selectedPiece).findValidMoves(board.getBoard(), board);
-                // } else {
-                    selectedPiece.findValidMoves(board.getBoard());
-                //}
-                    removeIllegalMoves(selectedPiece);
-                    pieceValidMoves = selectedPiece.getValidMoves().size();
-                }
+                pieceValidMoves = selectedPiece.getValidMoves().size();
+            }
             
             board.seeValidMoves(selectedPiece);
         
@@ -200,6 +189,7 @@ public class GameHandler {
             //after everything else:
             swapTurn();
         }
+        
         System.out.println("Game over! bye");
     }
 
@@ -221,6 +211,9 @@ public class GameHandler {
         return row;
     }
 
+    //valid moves are moves that are inbounds and either empty or contain opponent piece.
+    //legal moves are valid, and also result in own king not being in check.
+    //after finding valid moves, iterate through them to determine which are also legal. 
     public void removeIllegalMoves(Piece piece) {
         ArrayList<Integer[]> legalMoves = new ArrayList<>();
         for (Integer[] validMove: piece.getValidMoves()) {
@@ -267,8 +260,6 @@ public class GameHandler {
         }
         return false;
     }
-
-    //REFACTOR simulateMove. instead of readjusting piece's validMoves list each iteration, return a boolean that decides if the move is legal. 
 
     //simulate an ***OTHERWISE VALID*** move to see if doing it would put your king in check. if yes, remove it from the piece's validMoves arrayList
     public boolean simulateMove(Integer[] move, Piece piece) {
@@ -352,6 +343,7 @@ public class GameHandler {
         return newPieceType;
     }
 
+    //used for pawn promotion
     public Piece createPiece(String pieceType, Piece pawn) {
         Piece newPiece;
         String color = pawn.getColor();
