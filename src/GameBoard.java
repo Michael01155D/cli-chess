@@ -90,7 +90,7 @@ public class GameBoard {
         return color.equals("white") ? this.activeWhitePieces : this.activeBlackPieces;
     }
 
-    //used for Kings so they can temporarily remove a piece while finding valid moves and used for pawn promotion
+    // used for pawn promotion
     public void addActivePiece(Piece piece) {
         if (piece.getColor().equals("white")) {
             this.activeWhitePieces.add(piece);

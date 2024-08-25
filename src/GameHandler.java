@@ -7,6 +7,14 @@ import java.util.Random;
 //Current issue: if player is in check, need to be able to only select pieces that can get player out of check. 
 // if no such pieces exist, game over. 
 //CURRENT BUG SEE LINE ~400. Moves are remaining valid even if after making them, king is in check. need to debug removeIllegalmoves/simulate move methods. 
+//Source of bug: illegal moves are being re-added.
+//^ex: If rook can valid move to a7, a6, a5. When simulating a7, it isnt added. so valid moves become a6, a5. 
+// ^then when simulating a6, valid moves becomes a7, a5. 
+//I think the reason for this bug is that im iterating thru piece's valid moves list and calling a method on each move that also mutates validMove list
+
+//idea: instead of using one method that calls simulate move on each valid move, make simulate move return a bool, only add to valid moves if true. 
+
+
 
 //In charge of setting up players, printing board, managing turns
 public class GameHandler {
@@ -214,21 +222,14 @@ public class GameHandler {
     }
 
     public void removeIllegalMoves(Piece piece) {
-        ArrayList<Integer[]> copiedMoves = deepCopyList(piece.getValidMoves());
-        for (Integer[] copiedMove: copiedMoves) {
-            //if move puts own king in check, method will remove it from piece's validMoves list.
-            simulateMove(copiedMove, piece);
+        ArrayList<Integer[]> legalMoves = new ArrayList<>();
+        for (Integer[] validMove: piece.getValidMoves()) {
+            //if performing the move leaves own king in check, simulateMove returns false
+            if (simulateMove(validMove, piece)) {
+                legalMoves.add(validMove);
+            }
         }
-
-    }
-
-    //helper method to create deep copy of ArrayLists of moves, used to iterate over while modifying the original list of moves
-    public ArrayList<Integer[]> deepCopyList(ArrayList<Integer[]> listToCopy) {
-        ArrayList<Integer[]> copiedList = new ArrayList<>();
-        for (Integer[] element : listToCopy) {
-            copiedList.add(new Integer[] {element[0], element[1]});
-        }
-        return copiedList;
+        piece.setValidMoves(legalMoves);
     }
 
     public Piece getPieceFromInput(String currColor) {
@@ -267,12 +268,12 @@ public class GameHandler {
         return false;
     }
 
+    //REFACTOR simulateMove. instead of readjusting piece's validMoves list each iteration, return a boolean that decides if the move is legal. 
+
     //simulate an ***OTHERWISE VALID*** move to see if doing it would put your king in check. if yes, remove it from the piece's validMoves arrayList
-    public void simulateMove(Integer[] move, Piece piece) {
+    public boolean simulateMove(Integer[] move, Piece piece) {
         //isLegalMove will be set false if the move being simulated would put player's own king in check. if false, remove the move from piece's validMoves list.
         boolean isLegalMove = true;
-
-        //***CURRENTLY BUGGED. for debugging: using pawn at d2, aka: [6, 3] */
         GameBoard board = getGameBoard();
         Piece[][] boardState = board.getBoard();
         int currRow = piece.getPosition()[0];
@@ -295,6 +296,7 @@ public class GameHandler {
         //update spaces under attack after simulated move is made
         board.setSpacesUnderAttack("white");
         board.setSpacesUnderAttack("black");
+        
         //after simulating move, see if doing so would put own king in check, if so move is unsafe
         //if piece being moved is white, check the spaces under attack by black, and vice versa
         String colorToCheck = piece.getColor().equals("white") ? "black" : "white";
@@ -318,16 +320,7 @@ public class GameHandler {
             piece.setPosition(new int[] {currRow, currCol});
             board.setSpacesUnderAttack("white");
             board.setSpacesUnderAttack("black");
-            //if move isnt legal, dont add it to piece's new validMoves list:
-            if (!isLegalMove) {
-                ArrayList<Integer[]> newValidMoves = new ArrayList<>();
-                for (Integer[] validMove : piece.getValidMoves()) {
-                    if ( !(validMove[0] == move[0] && validMove[1] == move[1]) ) {
-                        newValidMoves.add(validMove);
-                    }
-                }
-                piece.setValidMoves(newValidMoves);
-            }
+            return isLegalMove;
     }
 
     public void promotePawn(Piece pawn) {
@@ -389,21 +382,13 @@ public class GameHandler {
             int totalMoves = 0;
             for (Piece piece: activePlayer.getPieces()) {
                 piece.findValidMoves(getGameBoard().getBoard());
-                if (piece instanceof Rook) {
-                    System.out.println("before removing rooks illegal moves, the moves are:");
-                    getGameBoard().seeValidMoves(piece);
-                }
                 //once valid moves are found, remove the ones that would leave player's king in check:
                 removeIllegalMoves(piece);
-                if (piece instanceof Rook) {
-                    //CURRENT BUG HERE: removeIllegalMoves not removing all moves that result in king being in check!
-                    System.out.println("after removing rooks illegal moves, remaining moves are:");
-                    getGameBoard().seeValidMoves(piece);
-                }
                 totalMoves += piece.getValidMoves().size();
             }
             //
             activePlayer.setTotalValidMoves(totalMoves);
+            System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " valid moves");
         }
         
 
