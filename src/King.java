@@ -2,45 +2,22 @@ import java.util.ArrayList;
 
 public class King extends Piece {
 
-
-    private boolean isInCheck;
-    
-    //Arr List of spaces the other color can capture, ie: king cant move to a space in this list
-    private ArrayList<Integer[]> unSafeSpaces;
+    private boolean canCastle;
     
     public King(String color, int[] startPosition) {
         super(color, startPosition);
         this.value = 999;
-        isInCheck = false;
-        this.unSafeSpaces = new ArrayList<>();
+        this.canCastle = true;
     }
 
-    public void setUnsafeSpaces(ArrayList<Integer[]> unsafeSpaces) {
-        this.unSafeSpaces = unsafeSpaces;
-    }
-    
-    public ArrayList<Integer[]> getUnsafeSpaces() {
-        return this.unSafeSpaces;
+    public boolean getCanCastle() {
+        return this.canCastle;
     }
 
-    //if current position is n unsafeSpaces arrList, set to true
-    public void setIsInCheck() {
-        int currRow = getPosition()[0];
-        int currCol = getPosition()[1];
-        for (Integer[] unsafeSpace : getUnsafeSpaces()) {
-            if (unsafeSpace[0] == currRow && unsafeSpace[1] == currCol) {
-                this.isInCheck = true;
-                return;
-            }
-        }
-        this.isInCheck = false;
-    }
-    
-    public boolean getIsInCheck() {
-        return this.isInCheck;
+    public void setCanCastle() {
+        this.canCastle = false;
     }
 
-    //never used, added as requirement of abstract parent
     public void findValidMoves(Piece[][] boardState){
         ArrayList<Integer[]> moves = new ArrayList<>();
         int currRow = this.getPosition()[0];
@@ -70,18 +47,18 @@ public class King extends Piece {
         //if space to move to is empty or opponent's piece:
         if (boardState[nextRow][nextCol] == null || 
             (boardState[nextRow][nextCol] != null && !boardState[nextRow][nextCol].getColor().equals(this.getColor()))
-            ) 
-            {
+            ) {
                 moves.add(new Integer[] {nextRow, nextCol});
-            }
+        }
     } 
 
+
     //for debugging.
-    public void printUnsafeSpaces() {
-        for (Integer[] space: this.unSafeSpaces) {
-            System.out.println("cant move to: " + space[0] + ", " + space[1]);
-        }
-    }
+    // public void printUnsafeSpaces() {
+    //     for (Integer[] space: this.unSafeSpaces) {
+    //         System.out.println("cant move to: " + space[0] + ", " + space[1]);
+    //     }
+    // }
 
     public String toString() {
         return "King";

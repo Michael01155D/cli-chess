@@ -4,17 +4,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
-//Current issue: if player is in check, need to be able to only select pieces that can get player out of check. 
-// if no such pieces exist, game over. 
-//CURRENT BUG SEE LINE ~400. Moves are remaining valid even if after making them, king is in check. need to debug removeIllegalmoves/simulate move methods. 
-//Source of bug: illegal moves are being re-added.
-//^ex: If rook can valid move to a7, a6, a5. When simulating a7, it isnt added. so valid moves become a6, a5. 
-// ^then when simulating a6, valid moves becomes a7, a5. 
-//I think the reason for this bug is that im iterating thru piece's valid moves list and calling a method on each move that also mutates validMove list
 
-//idea: instead of using one method that calls simulate move on each valid move, make simulate move return a bool, only add to valid moves if true. 
+/*CURRENT BUG SEE LINE ~157. Brainstorm implementing castling.
+//current approach:
+//find valid moves -> if selected piece is king, check if can castle
+//if yes, check if it has rooks active, if yes, check if they can castle
+//for each rook that can castle, check if castling with them is legal
+//if yes, add to valid moves list
+//note: a king that can castle will always have other valid moves, so its ok to do this after finding non-castle valid moves.
 
 
+*/
 
 //In charge of setting up players, printing board, managing turns
 public class GameHandler {
@@ -135,22 +135,28 @@ public class GameHandler {
             board.displayBoard();
             //find all the legal moves for the players' pieces
             findPlayerValidMoves();
-            boolean isInCheck = activePlayer.getKing().getIsInCheck();
-            String currColor = activePlayer.getColor();
-            Piece selectedPiece =  getPieceFromInput(currColor);
-            int pieceValidMoves = selectedPiece.getValidMoves().size();
-            int totalValidMoves = activePlayer.getTotalValidMoves();
-          
-            if (isInCheck && totalValidMoves == 0) {
+            if (activePlayer.getTotalValidMoves() == 0) {
                 //todo: implement a proper game over method
                 this.isGameOver = true;
                 break;
             }
+        
+            String currColor = activePlayer.getColor();
+            Piece selectedPiece =  getPieceFromInput(currColor);
+            int pieceValidMoves = selectedPiece.getValidMoves().size();
 
             while (pieceValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
                 pieceValidMoves = selectedPiece.getValidMoves().size();
+            }
+
+            //TODO: if piece is king, check if it can castle with either rook, if yes, add those moves to movelist
+            if (selectedPiece instanceof King) {
+               King king = (King) selectedPiece;
+               if (king.getCanCastle() == true) {
+                    checkForCastle();
+               } 
             }
             
             board.seeValidMoves(selectedPiece);
@@ -173,24 +179,27 @@ public class GameHandler {
             }
             //perform move, updating board state
             board.movePiece(selectedPiece, move);
+            //if King or Rook was moved, they can no longer castle. 
+            if (selectedPiece instanceof Rook) {
+                Rook rook = (Rook)selectedPiece;
+                rook.setCanCastle();
+            }
+            if (selectedPiece instanceof King) {
+                King king = (King) selectedPiece;
+                king.setCanCastle();
+            }
 
         //if pawn reaches end row, promote it then update boardstate
         if (selectedPiece instanceof Pawn &&  (move[0]== 0 || move[0] == 7) ) {
             promotePawn(selectedPiece);
             board.setSpacesUnderAttack(currColor);
-            //update the spaces unsafe for the other player's king after replacing the pawn with a new piece:
-            if (activePlayer == white) {
-                black.getKing().setUnsafeSpaces(board.getSpacesUnderAttack(currColor));
-            } else {
-                white.getKing().setUnsafeSpaces(board.getSpacesUnderAttack(currColor));
-            }
         }
             
             //after everything else:
             swapTurn();
         }
         
-        System.out.println("Game over! bye");
+        System.out.println("Game over, bye!");
     }
 
     public String getColInput() {
@@ -372,18 +381,21 @@ public class GameHandler {
     
     //called at the start of each turn. pieces each set their valid moves, set players total valid moves
     public void findPlayerValidMoves() {
-            int totalMoves = 0;
-            for (Piece piece: activePlayer.getPieces()) {
-                piece.findValidMoves(getGameBoard().getBoard());
-                //once valid moves are found, remove the ones that would leave player's king in check:
-                removeIllegalMoves(piece);
-                totalMoves += piece.getValidMoves().size();
-            }
-            //
-            activePlayer.setTotalValidMoves(totalMoves);
-            System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " valid moves");
+        int totalMoves = 0;
+        for (Piece piece: activePlayer.getPieces()) {
+            piece.findValidMoves(getGameBoard().getBoard());
+            //once valid moves are found, remove the ones that would leave player's king in check:
+            removeIllegalMoves(piece);
+            totalMoves += piece.getValidMoves().size();
         }
+        activePlayer.setTotalValidMoves(totalMoves);
+        System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " valid moves");
+    }
         
+
+    public void checkForCastle() {
+        
+    }
 
     //for testing:
     public void printUnsafeSpaces(String color) {

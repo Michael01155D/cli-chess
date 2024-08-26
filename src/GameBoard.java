@@ -55,10 +55,10 @@ public class GameBoard {
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
         //initialize each King's unsafe spaces:
-        King wKing = ((King)getBoard()[7][4]);
-        King bKing = ((King)getBoard()[0][4]);
-        wKing.setUnsafeSpaces(getSpacesUnderAttack("black"));
-        bKing.setUnsafeSpaces(getSpacesUnderAttack("white"));
+        // King wKing = ((King)getBoard()[7][4]);
+        // King bKing = ((King)getBoard()[0][4]);
+        // wKing.setUnsafeSpaces(getSpacesUnderAttack("black"));
+        // bKing.setUnsafeSpaces(getSpacesUnderAttack("white"));
     }
 
     //return array of pieces in following order: rook, knight, bishop, queen, king, bishop, knight, rook, pawns
@@ -157,20 +157,20 @@ public class GameBoard {
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
 
-        //update each King's list of unsafe spaces and see if they're in check:
-        for (Piece whitePiece : getActivePieces("white")) {
-            if (whitePiece instanceof King) {
-                ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-                ((King)whitePiece).setIsInCheck();
-            }
-        }
+        // //update each King's list of unsafe spaces and see if they're in check:
+        // for (Piece whitePiece : getActivePieces("white")) {
+        //     if (whitePiece instanceof King) {
+        //         ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
+        //         ((King)whitePiece).setIsInCheck();
+        //     }
+        // }
 
-        for (Piece blackPiece : getActivePieces("black")) {
-            if (blackPiece instanceof King) {
-                ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-                ((King)blackPiece).setIsInCheck();
-            }
-        }
+        // for (Piece blackPiece : getActivePieces("black")) {
+        //     if (blackPiece instanceof King) {
+        //         ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+        //         ((King)blackPiece).setIsInCheck();
+        //     }
+        // }
 
         return;
     } 
@@ -236,17 +236,17 @@ public class GameBoard {
         }
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
-        for (Piece whitePiece : getActivePieces("white")) {
-            if (whitePiece instanceof King) {
-                ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-            }
-        }
+        // for (Piece whitePiece : getActivePieces("white")) {
+        //     if (whitePiece instanceof King) {
+        //         ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
+        //     }
+        // }
 
-        for (Piece blackPiece : getActivePieces("black")) {
-            if (blackPiece instanceof King) {
-                ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-            }
-        }
+        // for (Piece blackPiece : getActivePieces("black")) {
+        //     if (blackPiece instanceof King) {
+        //         ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
+        //     }
+        // }
 
 
     }

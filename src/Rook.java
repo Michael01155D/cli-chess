@@ -2,9 +2,12 @@ import java.util.ArrayList;
 
 public class Rook extends Piece {
 
+    private boolean canCastle;
+
     public Rook(String color, int[] startPosition) {
         super(color, startPosition);
         this.value = 5;
+        this.canCastle = true;
     }
 
     public void findValidMoves(Piece[][] boardState) {
@@ -15,6 +18,14 @@ public class Rook extends Piece {
             addMoves(dir, boardState, moves);
         }
         setValidMoves(moves);
+    }
+
+    public boolean getCanCastle() {
+        return this.canCastle;
+    }
+
+    public void setCanCastle() {
+        this.canCastle = false;
     }
 
     private void addMoves(String dir, Piece[][] boardState, ArrayList<Integer[]> moves) {
