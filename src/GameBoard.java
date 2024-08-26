@@ -156,22 +156,6 @@ public class GameBoard {
         //update lists of spaces that kings can't access:
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
-
-        // //update each King's list of unsafe spaces and see if they're in check:
-        // for (Piece whitePiece : getActivePieces("white")) {
-        //     if (whitePiece instanceof King) {
-        //         ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-        //         ((King)whitePiece).setIsInCheck();
-        //     }
-        // }
-
-        // for (Piece blackPiece : getActivePieces("black")) {
-        //     if (blackPiece instanceof King) {
-        //         ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-        //         ((King)blackPiece).setIsInCheck();
-        //     }
-        // }
-
         return;
     } 
     

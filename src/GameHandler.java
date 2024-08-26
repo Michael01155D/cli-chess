@@ -140,11 +140,10 @@ public class GameHandler {
                 this.isGameOver = true;
                 break;
             }
-        
+            
             String currColor = activePlayer.getColor();
             Piece selectedPiece =  getPieceFromInput(currColor);
             int pieceValidMoves = selectedPiece.getValidMoves().size();
-
             while (pieceValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
                 selectedPiece = getPieceFromInput(currColor);
@@ -155,6 +154,7 @@ public class GameHandler {
             if (selectedPiece instanceof King) {
                King king = (King) selectedPiece;
                if (king.getCanCastle() == true) {
+                    //check if player has rooks, if so see if they can castle
                     checkForCastle();
                } 
             }
@@ -177,6 +177,9 @@ public class GameHandler {
                     white.removePiece(capturedPiece);
                 }
             }
+
+            //store kings column position to check if the move made is a castle;
+            int kingCol = activePlayer.getKing().getPosition()[1];
             //perform move, updating board state
             board.movePiece(selectedPiece, move);
             //if King or Rook was moved, they can no longer castle. 
@@ -187,6 +190,11 @@ public class GameHandler {
             if (selectedPiece instanceof King) {
                 King king = (King) selectedPiece;
                 king.setCanCastle();
+                int newCol = king.getPosition()[1];
+                //check if move made was a castle, if yes need to update rook's position as well:
+                if (Math.abs(newCol - kingCol) == 2) {
+                    moveRook(king);
+                }
             }
 
         //if pawn reaches end row, promote it then update boardstate
@@ -392,9 +400,96 @@ public class GameHandler {
         System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " valid moves");
     }
         
-
+    
+    //check if player has rooks active, if yes, check if they can castle
+    //for each rook that can castle, check if castling with them is legal
+    //if yes, add to valid moves list
     public void checkForCastle() {
-        
+        ArrayList<Piece> playerPieces = activePlayer.getPieces();
+        ArrayList<Rook> rooksCanCastle = new ArrayList<>();
+        //if player has rooks active, check to see if they can castle
+        for (Piece piece: playerPieces) {
+            if (piece instanceof Rook) {
+                Rook rook = (Rook) piece;
+                if (rook.getCanCastle() == true) {
+                    rooksCanCastle.add(rook);
+                }
+            }
+        }
+
+        //for each rook that can castle, see if castling is legal 
+        for (Rook rook : rooksCanCastle) {
+            //checkLegalCastle will add move to King's moveList if castling with the rook is legal
+            checkLegalCastle(rook);
+        }
+    }
+    
+    //receives a rook that has not moved yet, must check if castle conditions are met
+    //ie, no pieces between rook and king, and king doesnt leave, enter, or pass thru check
+    public void checkLegalCastle(Rook rook) {
+        Piece[][] boardState = getGameBoard().getBoard();
+        int rowIndex = rook.getPosition()[0];
+        String oppoColor = rook.getColor().equals("white") ? "black" : "white";
+        King king = activePlayer.getKing();
+        ArrayList<Integer[]> unsafeSpaces = getGameBoard().getSpacesUnderAttack(oppoColor);
+        //kingside castle if rook is at column 7, else queen side castle
+        if (rook.getPosition()[1] == 7) {
+            //for king side castle, check if [0][5] & [0][6] or [7][5] & [7][6] are free 
+            //if not, cant castle with this rook right now
+            if ( ! (boardState[rowIndex][5] == null && boardState[rowIndex][6] == null) ) {
+                return;
+            }
+            //check if king or right two spaces are in check:
+            for (Integer[] unsafeSpace : unsafeSpaces) {
+                int row = unsafeSpace[0];
+                int col = unsafeSpace[1];
+                //only check spaces on same row as king
+                if (row == rowIndex) {
+                    if (col == 4 || col == 5 || col == 6) {
+                    return;
+                    }
+                } 
+            }
+            //if reached, kingside castle is valid
+            ArrayList<Integer[]> validMoves = king.getValidMoves();
+            validMoves.add(new Integer[] {rowIndex, 6});
+            king.setValidMoves(validMoves);
+            return;
+        //if not kingside, check if queenside spaces btwn king and rook are empty
+        } else {
+            if (! (boardState[rowIndex][3] == null && boardState[rowIndex][2] == null && boardState[rowIndex][1] == null) ){
+                return;
+            }
+            //if reached, queenside spaces between king and rook are empty.check if king and 2 adjacent spaces are not in check:
+            for (Integer[] unsafeSpace : unsafeSpaces) {
+                int row = unsafeSpace[0];
+                int col = unsafeSpace[1];
+                //only check spaces on same row as king
+                if (row == rowIndex) {
+                    if (col == 4 || col == 3 || col == 2) {
+                        return;
+                    }
+                } 
+            }
+            //if reached, quueenside castle is valid
+            ArrayList<Integer[]> validMoves = king.getValidMoves();
+            validMoves.add(new Integer[] {rowIndex, 2});
+            king.setValidMoves(validMoves);
+        }
+       
+
+    }
+    //called after the king performs a legal castle, based on king's position, move rook accordingly.
+    public void moveRook(King king)  {
+        int kingRow = king.getPosition()[0];
+        //if kingside castle:
+        if (king.getPosition()[1] == 6) {
+            Rook castlingRook = (Rook) getGameBoard().getPiece(kingRow, 7);
+            getGameBoard().movePiece(castlingRook, new int[] {kingRow, 5});
+        } else {
+            Rook castlingRook = (Rook) getGameBoard().getPiece(kingRow, 0);
+            getGameBoard().movePiece(castlingRook, new int[] {kingRow, 3});
+        }
     }
 
     //for testing:
