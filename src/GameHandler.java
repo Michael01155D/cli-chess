@@ -5,16 +5,6 @@ import java.util.Map;
 import java.util.Random;
 
 
-/*CURRENT BUG SEE LINE ~157. Brainstorm implementing castling.
-//current approach:
-//find valid moves -> if selected piece is king, check if can castle
-//if yes, check if it has rooks active, if yes, check if they can castle
-//for each rook that can castle, check if castling with them is legal
-//if yes, add to valid moves list
-//note: a king that can castle will always have other valid moves, so its ok to do this after finding non-castle valid moves.
-
-
-*/
 
 //In charge of setting up players, printing board, managing turns
 public class GameHandler {
@@ -136,6 +126,9 @@ public class GameHandler {
             //find all the legal moves for the players' pieces
             findPlayerValidMoves();
             if (activePlayer.getTotalValidMoves() == 0) {
+                if (activePlayer.getKing().getIsInCheck() == false) {
+                    System.out.println("Stalemate! The game ends in a tie.");
+                }
                 //todo: implement a proper game over method
                 this.isGameOver = true;
                 break;
@@ -202,7 +195,13 @@ public class GameHandler {
             promotePawn(selectedPiece);
             board.setSpacesUnderAttack(currColor);
         }
-            
+        
+        //after board is updated, set upcoming player's king to be in check or not based on boardstate.
+        if (activePlayer == white) {
+            black.getKing().setIsInCheck(board.getSpacesUnderAttack(currColor));
+        } else {
+            white.getKing().setIsInCheck(board.getSpacesUnderAttack(currColor));
+        }
             //after everything else:
             swapTurn();
         }

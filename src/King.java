@@ -3,11 +3,13 @@ import java.util.ArrayList;
 public class King extends Piece {
 
     private boolean canCastle;
+    private boolean isInCheck;
     
     public King(String color, int[] startPosition) {
         super(color, startPosition);
         this.value = 999;
         this.canCastle = true;
+        this.isInCheck = false;
     }
 
     public boolean getCanCastle() {
@@ -16,6 +18,19 @@ public class King extends Piece {
 
     public void setCanCastle() {
         this.canCastle = false;
+    }
+
+    public boolean getIsInCheck() {
+        return this.isInCheck;
+    }
+
+    public boolean setIsInCheck(ArrayList<Integer[]> unsafeSpaces) {
+        for (Integer[] unsafeSpace: unsafeSpaces) {
+            if (unsafeSpace[0] == this.getPosition()[0] && unsafeSpace[1] == this.getPosition()[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void findValidMoves(Piece[][] boardState){
