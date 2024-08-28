@@ -220,18 +220,5 @@ public class GameBoard {
         }
         setSpacesUnderAttack("white");
         setSpacesUnderAttack("black");
-        // for (Piece whitePiece : getActivePieces("white")) {
-        //     if (whitePiece instanceof King) {
-        //         ((King)whitePiece).setUnsafeSpaces(getSpacesUnderAttack("black"));
-        //     }
-        // }
-
-        // for (Piece blackPiece : getActivePieces("black")) {
-        //     if (blackPiece instanceof King) {
-        //         ((King)blackPiece).setUnsafeSpaces(getSpacesUnderAttack("white"));
-        //     }
-        // }
-
-
     }
 }

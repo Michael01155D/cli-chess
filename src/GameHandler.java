@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
-
-
 //In charge of setting up players, printing board, managing turns
 public class GameHandler {
 
@@ -89,21 +87,14 @@ public class GameHandler {
 
     public void initializePlayers() {
         //prev player name irrelevant for nameOne
-
-        //TODO: UNCOMMENT THIS BLOCK WHEN DONE TESTING (commented out to expedite game init process)
-
-        // String nameOne = createPlayerName("One", " ");
-        // String nameTwo = createPlayerName("Two", nameOne);
-        // Random rand = new Random();
-        // int colorSelection = rand.nextInt(2);
-        // String nameForWhite = colorSelection == 0 ? nameOne : nameTwo;
-        // String nameForBlack = nameForWhite.equals(nameOne) ? nameTwo : nameOne;
-        // white = new Player(nameForWhite, "white", gameBoard.getActivePieces("white"));
-        // black = new Player(nameForBlack, "black", gameBoard.getActivePieces("black"));
-
-        //TODO: delete these 2 lines when done testing
-        white = new Player("w", "white", gameBoard.getActivePieces("white"));
-        black = new Player("b", "black", gameBoard.getActivePieces("black"));
+        String nameOne = createPlayerName("One", " ");
+        String nameTwo = createPlayerName("Two", nameOne);
+        Random rand = new Random();
+        int colorSelection = rand.nextInt(2);
+        String nameForWhite = colorSelection == 0 ? nameOne : nameTwo;
+        String nameForBlack = nameForWhite.equals(nameOne) ? nameTwo : nameOne;
+        white = new Player(nameForWhite, "white", gameBoard.getActivePieces("white"));
+        black = new Player(nameForBlack, "black", gameBoard.getActivePieces("black"));
     }
 
     public Player getActivePlayer() {
@@ -143,6 +134,8 @@ public class GameHandler {
                     System.out.println("Stalemate! The game ends in a tie.");
                 }
                 //todo: implement a proper game over method
+                Player winner = activePlayer == white ? black : white;
+                System.out.println("Checkmate, " + winner.getName() + " wins!");
                 this.isGameOver = true;
                 break;
             }
@@ -247,24 +240,6 @@ public class GameHandler {
         System.out.println("Game over, bye!");
     }
 
-    public String getColInput() {
-        String col = "";
-        while (!BOARD_COL_TO_INDEX.containsKey(col)) {
-            System.out.print("Please enter the column (a to h): ");
-            col = inputScanner.nextLine();
-        }
-        return col;
-    }
-
-    public String getRowInput() { 
-        String row = "";
-        while (!BOARD_ROW_TO_INDEX.containsKey(row)) {
-            System.out.print("Please enter the row (1 to 8): ");
-            row = inputScanner.nextLine();
-        }
-        return row;
-    }
-
     //valid moves are moves that are inbounds and either empty or contain opponent piece.
     //legal moves are valid, and also result in own king not being in check.
     //after finding valid moves, iterate through them to determine which are also legal. 
@@ -278,22 +253,19 @@ public class GameHandler {
         }
         piece.setValidMoves(legalMoves);
     }
-
+    
     public Piece getPieceFromInput(String currColor) {
+
         Piece selectedPiece = null;
+
         while (selectedPiece == null || !(selectedPiece.getColor().equals(currColor))) {
             if (selectedPiece != null) {
                 System.out.println("That piece belongs to the opponent!");
             }
             System.out.println(activePlayer.getName() + " select a " + currColor + " piece to move");
-            int colIndex = BOARD_COL_TO_INDEX.get(getColInput());
-            int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
-            selectedPiece = getGameBoard().getPiece(rowIndex, colIndex);
-            if (selectedPiece == null) {
-                System.out.println("There was no piece found at that position");
-            }
+            int[] destination = getIndiciesFromInput();
+            selectedPiece = getGameBoard().getPiece(destination[0], destination[1]);
         }
-
         return selectedPiece;
     }
 
@@ -301,9 +273,27 @@ public class GameHandler {
         String currRow = INDEX_TO_BOARD_ROW.get(selectedPiece.getPosition()[0]);
         String currCol = INDEX_TO_BOARD_COL.get(selectedPiece.getPosition()[1]);
         System.out.println("Select a valid space on the board to move the " + selectedPiece + " at " + currCol + currRow);
-        int colIndex = BOARD_COL_TO_INDEX.get(getColInput());
-        int rowIndex = BOARD_ROW_TO_INDEX.get(getRowInput());
-        return new int[] {rowIndex, colIndex};
+        return getIndiciesFromInput();
+    }
+
+    //return [row][col] index 0-7 based on column(a-h) and row(1-8) input;
+    public int[] getIndiciesFromInput() {
+        String destination = "";
+        //keep requesting input until destination is: length 2, 1st char in BOARD_COL_TO_INDEX.containsKey(col)) 2nd char in BOARD_ROW_TO_INDEX.containsKey(Row)
+        while (! (destination.length() == 2 && 
+            BOARD_COL_TO_INDEX.containsKey(destination.substring(0, 1)) && 
+            BOARD_ROW_TO_INDEX.containsKey(destination.substring(1, 2)))) {
+                System.out.println("Select the column (a to h) and row (1 to 8), then hit enter.");
+                destination = inputScanner.nextLine().toLowerCase().trim();
+                //if user inputted a space between col and row, remove the space. 
+                if (destination.length() == 3 && destination.substring(1, 2).equals(" ")) {
+                    destination = destination.substring(0, 1) + destination.substring(2, 3);
+                }
+            }
+
+        int row = BOARD_ROW_TO_INDEX.get(destination.substring(1, 2));
+        int col = BOARD_COL_TO_INDEX.get(destination.substring(0, 1));
+        return new int[] { row, col };
     }
 
     public boolean moveIsValid(int[] move, ArrayList<Integer[]> validMoves) {
@@ -430,7 +420,6 @@ public class GameHandler {
         for (Piece piece: activePlayer.getPieces()) {
             piece.findValidMoves(getGameBoard().getBoard());
             if (piece instanceof Pawn && enPassantActive) {
-                System.out.println("checking for en passant at start of player turn!");
                 checkForEnPassant((Pawn) piece);
             }
             //once valid moves are found, remove the ones that would leave player's king in check:
@@ -540,7 +529,6 @@ public class GameHandler {
         int nextRow = pendingMove[0];
         // System.out.println("when checking if en passant should be enabled, prev col is: " + INDEX_TO_BOARD_ROW.get(prevRow) + "next col is: " + INDEX_TO_BOARD_COL.get(nextCol));
         if (Math.abs(prevRow - nextRow) == 2) {
-            System.out.println("enableEnPassant (hopefully) works now");
             setEnPassantCapturable(pawn);
             return true;
         }
@@ -557,7 +545,6 @@ public class GameHandler {
 
         //if pawns on same row and 1 col apart, add en passant to attackingPawn's moveList
         if (attackingRow == capturableRow && Math.abs(capturableCol - attackingCol) == 1) {
-            System.out.println("adding enPassant to move list for pawn at: " + INDEX_TO_BOARD_COL.get(attackingCol) + INDEX_TO_BOARD_ROW.get(attackingRow));
             attackingPawn.addEnPassant(capturablePawn);
         }
     }
