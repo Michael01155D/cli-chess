@@ -15,6 +15,8 @@ public class GameHandler {
     private Scanner inputScanner;
     private Player activePlayer;
     private boolean isGameOver;
+    private boolean enPassantActive;
+    private Pawn enPassantCapturable;
 
     //maps to quickly convert between rows/cols as their labelled on board to and from array indicies. ex: "a6" (col, row) would be Board[2, 0] (row, col)
     final Map<String, Integer> BOARD_COL_TO_INDEX = Map.of( 
@@ -66,6 +68,8 @@ public class GameHandler {
         inputScanner = new Scanner(System.in);
         initializePlayers();
         this.activePlayer = white;
+        this.enPassantActive = false;
+        this.enPassantCapturable = null;
         play(); 
     }
     
@@ -118,12 +122,21 @@ public class GameHandler {
     public GameBoard getGameBoard() {
         return this.gameBoard;
     }
+
+    public void setEnPassantCapturable (Pawn pawn) {
+        this.enPassantCapturable = pawn;
+    }
+
+    public Pawn getEnPassantCapturable() {
+        return this.enPassantCapturable;
+    }
+
     //gameflow: display board, choose a piece, move piece, check gameOver, swap player. 
     public void play() {
         while (!isGameOver){
             GameBoard board = getGameBoard();
             board.displayBoard();
-            //find all the legal moves for the players' pieces
+            //find all the legal moves for the players' pieces, including en passant if last player's move was pawn up/down 2:
             findPlayerValidMoves();
             if (activePlayer.getTotalValidMoves() == 0) {
                 if (activePlayer.getKing().getIsInCheck() == false) {
@@ -136,6 +149,7 @@ public class GameHandler {
             
             String currColor = activePlayer.getColor();
             Piece selectedPiece =  getPieceFromInput(currColor);
+            //add enPassant to Pawn's valid moves if conditions are met:
             int pieceValidMoves = selectedPiece.getValidMoves().size();
             while (pieceValidMoves == 0) {
                 System.out.println("This piece has no valid moves, please select another piece.");
@@ -143,7 +157,6 @@ public class GameHandler {
                 pieceValidMoves = selectedPiece.getValidMoves().size();
             }
 
-            //TODO: if piece is king, check if it can castle with either rook, if yes, add those moves to movelist
             if (selectedPiece instanceof King) {
                King king = (King) selectedPiece;
                if (king.getCanCastle() == true) {
@@ -162,6 +175,7 @@ public class GameHandler {
 
             //if opponent's piece is at new destination, remove it from board
             Piece capturedPiece = board.getBoard()[move[0]][move[1]];
+
             if (capturedPiece != null) {
                 board.removeActivePiece(capturedPiece);
                 if (activePlayer == white) {
@@ -171,8 +185,32 @@ public class GameHandler {
                 }
             }
 
-            //store kings column position to check if the move made is a castle;
+            //check if move selected is en passant
+            if (enPassantActive && selectedPiece instanceof Pawn) {
+                //if current row/col are each different than destination row/col, and destination is empty, then move is en passant:
+                if (selectedPiece.getPosition()[0] != move[0] && selectedPiece.getPosition()[1] != move[1] && board.getBoard()[move[0]][move[1]] == null) {
+                    //remove the opponent's pawn
+                    if (activePlayer == white) {
+                        black.removePiece(enPassantCapturable);
+                    } else {
+                        white.removePiece(enPassantCapturable);
+                    }
+                    board.getBoard()[enPassantCapturable.getPosition()[0]][enPassantCapturable.getPosition()[1]] = null;
+                    board.removeActivePiece(enPassantCapturable);
+                }
+            }
+
+            //check if opponent can en passant next turn:
+            this.enPassantActive = selectedPiece instanceof Pawn && enableEnPassant((Pawn) selectedPiece, move);
+            if (enPassantActive == false) {
+                setEnPassantCapturable(null);
+            }
+            
+            //store kings column position before moving to check if the move made is a castle;
             int kingCol = activePlayer.getKing().getPosition()[1];
+
+            //if piece moved is a pawn, check if opponent can en passant next turn:
+            
             //perform move, updating board state
             board.movePiece(selectedPiece, move);
             //if King or Rook was moved, they can no longer castle. 
@@ -391,12 +429,17 @@ public class GameHandler {
         int totalMoves = 0;
         for (Piece piece: activePlayer.getPieces()) {
             piece.findValidMoves(getGameBoard().getBoard());
+            if (piece instanceof Pawn && enPassantActive) {
+                System.out.println("checking for en passant at start of player turn!");
+                checkForEnPassant((Pawn) piece);
+            }
             //once valid moves are found, remove the ones that would leave player's king in check:
             removeIllegalMoves(piece);
             totalMoves += piece.getValidMoves().size();
         }
         activePlayer.setTotalValidMoves(totalMoves);
-        System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " valid moves");
+        String pluralCheck = totalMoves == 1 ? "valid move" : "valid moves";
+        System.out.println("Player " + activePlayer.getName() + " has " + totalMoves + " " + pluralCheck);
     }
         
     
@@ -488,6 +531,34 @@ public class GameHandler {
         } else {
             Rook castlingRook = (Rook) getGameBoard().getPiece(kingRow, 0);
             getGameBoard().movePiece(castlingRook, new int[] {kingRow, 3});
+        }
+    }
+
+    //returns whether next player can enPassant if: pawn moves from starting position 2 spaces
+    public boolean enableEnPassant(Pawn pawn, int[] pendingMove) {
+        int prevRow = pawn.getPosition()[0];
+        int nextRow = pendingMove[0];
+        // System.out.println("when checking if en passant should be enabled, prev col is: " + INDEX_TO_BOARD_ROW.get(prevRow) + "next col is: " + INDEX_TO_BOARD_COL.get(nextCol));
+        if (Math.abs(prevRow - nextRow) == 2) {
+            System.out.println("enableEnPassant (hopefully) works now");
+            setEnPassantCapturable(pawn);
+            return true;
+        }
+        return false;
+    }
+
+    //called when enPasant is possible. check if capturing pawn is located left or right of the capturable pawn. if so, capture it and move ahead of the captured pawn
+    public void checkForEnPassant(Pawn attackingPawn) {
+        Pawn capturablePawn = getEnPassantCapturable();
+        int attackingRow = attackingPawn.getPosition()[0];
+        int attackingCol = attackingPawn.getPosition()[1];
+        int capturableRow = capturablePawn.getPosition()[0];
+        int capturableCol = capturablePawn.getPosition()[1];
+
+        //if pawns on same row and 1 col apart, add en passant to attackingPawn's moveList
+        if (attackingRow == capturableRow && Math.abs(capturableCol - attackingCol) == 1) {
+            System.out.println("adding enPassant to move list for pawn at: " + INDEX_TO_BOARD_COL.get(attackingCol) + INDEX_TO_BOARD_ROW.get(attackingRow));
+            attackingPawn.addEnPassant(capturablePawn);
         }
     }
 

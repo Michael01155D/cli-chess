@@ -35,7 +35,10 @@ public class Pawn extends Piece {
         if (hasNotMoved && boardState[forwardTwoSpaces][col] == null && forwardEmpty) {
             moves.add(new Integer[] {forwardTwoSpaces, col});
         }
-         
+        
+        //check for en passent: if piece is 3 forward of start and 
+
+
         setValidMoves(moves);
     }
 
@@ -61,6 +64,19 @@ public class Pawn extends Piece {
         }
         return diagonals;
     }
+
+    //called from GameHandler when conditions for en passant are met. 
+    //add to Pawn's valid movelist the space after the capturablePawn
+    public void addEnPassant(Pawn capturablePawn) {
+        ArrayList<Integer[]> validMoves = getValidMoves();
+        int capturablePawnRow = capturablePawn.getPosition()[0];
+        //determine row to move to based on captured pawn's position
+        int rowDestination = capturablePawn.getColor().equals("black") ? capturablePawnRow - 1 : capturablePawnRow + 1;
+        int colDestination = capturablePawn.getPosition()[1];
+        validMoves.add(new Integer[] {rowDestination, colDestination});
+        setValidMoves(validMoves);
+    }
+    
     public String toString() {
         return "Pawn";
     }
